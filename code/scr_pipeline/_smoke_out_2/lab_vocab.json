@@ -1,0 +1,6 @@
+{
+  "itemid_to_index": {},
+  "min_train_event_count": 1,
+  "padding_index": 0,
+  "unknown_index": 1
+}

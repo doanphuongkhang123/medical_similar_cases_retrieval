@@ -1,0 +1,22 @@
+{
+  "unit": "hadm_id",
+  "split_unit": "subject_id",
+  "lab_window_hours": 24.0,
+  "max_events_per_sequence": 512,
+  "seed": 42,
+  "counts": {
+    "samples": 62,
+    "samples_with_lab": 0,
+    "events": 0,
+    "sequences": 0
+  },
+  "split_counts": {
+    "test": 4,
+    "train": 39,
+    "val": 19
+  },
+  "source": {
+    "mimic_iv": "/Users/k/Documents/work/SimilarCasesRetrieval/mimic/mimic-iv-3.1",
+    "notes": "/Users/k/Documents/work/SimilarCasesRetrieval/mimic/mimic-iv-note-deidentified-free-text-clinical-notes-2.2"
+  }
+}

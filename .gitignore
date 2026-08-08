@@ -1,0 +1,57 @@
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local environments and package caches
+.venv/
+venv/
+env/
+code/.venv/
+.conda/
+.cache/
+~/.cache/
+
+# Raw data, derived datasets and experiment outputs
+data/
+datasets/
+outputs/
+checkpoints/
+experiments/runs/
+runs/
+logs/
+*.parquet
+*.csv
+*.tsv
+*.jsonl
+*.npz
+*.npy
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.pkl
+*.pickle
+
+# Archives and external/vendor code. The project code should be tracked
+# separately from third-party repositories and downloaded archives.
+code/third_party/
+*.zip
+*.tar
+*.tar.gz
+
+# Local experiment metadata that may contain machine-specific paths
+*.manifest.json
+*.run.json
