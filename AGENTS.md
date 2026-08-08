@@ -42,6 +42,7 @@ thay đổi các nội dung đó, phải ghi rõ nguồn, giả định và ản
 
 - SSH host: `vaipe_aiotlab`
 - Repository root bắt buộc: `/mnt/disk4/khangdp/similar_cases_retrieval/`
+- Dataset riêng của nhóm: `/mnt/disk4/trangtth/data_subset/`
 - Mục đích: chạy test đầy đủ, preprocessing trên dữ liệu hoàn chỉnh, huấn
   luyện, embedding, retrieval benchmark và các tác vụ GPU.
 
@@ -56,6 +57,13 @@ ssh vaipe_aiotlab \
 Không đổi sang một đường dẫn repository khác trên server. Không chạy toàn bộ
 dataset, huấn luyện hoặc embedding nặng trên local trừ khi người dùng yêu
 cầu rõ ràng.
+
+Dataset riêng của nhóm tại `/mnt/disk4/trangtth/data_subset/` chỉ được đọc và
+xử lý trên server. Không copy dataset này về local, không đưa vào thư mục
+repository, không đồng bộ qua `sync_to_server.sh`, và không commit hoặc upload
+nó lên bất kỳ Git remote/dịch vụ bên ngoài nào. Khi chạy pipeline với dataset
+này, phải ghi rõ path dataset, phiên bản hoặc mốc dữ liệu, cùng các tham số
+lọc/chia dữ liệu trong log thí nghiệm.
 
 ## 4. Quy tắc đồng bộ local/server
 
