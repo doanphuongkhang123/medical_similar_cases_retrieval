@@ -45,6 +45,7 @@ thay đổi các nội dung đó, phải ghi rõ nguồn, giả định và ản
 - Dataset riêng của nhóm: `/mnt/disk4/trangtth/data_subset/`
 - Mục đích: chạy test đầy đủ, preprocessing trên dữ liệu hoàn chỉnh, huấn
   luyện, embedding, retrieval benchmark và các tác vụ GPU.
+- Conda environment ưu tiên: `scr_env`.
 
 Khi cần chạy test hoặc tác vụ nặng, phải SSH vào server và chạy từ đúng
 repository root:
@@ -57,6 +58,22 @@ ssh vaipe_aiotlab \
 Không đổi sang một đường dẫn repository khác trên server. Không chạy toàn bộ
 dataset, huấn luyện hoặc embedding nặng trên local trừ khi người dùng yêu
 cầu rõ ràng.
+
+Khi chạy Python/pipeline trên server, phải ưu tiên và xác minh conda
+environment `scr_env`:
+
+```bash
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate scr_env
+which python
+python --version
+```
+
+Không âm thầm dùng environment khác hoặc tạo environment mới nếu `scr_env`
+không tồn tại. Khi environment bị thiếu hoặc không hợp lệ, báo rõ lỗi và chỉ
+đổi environment sau khi người dùng cho phép. Với lệnh SSH không tương tác,
+phải source conda trước khi `conda activate`; không giả định rằng shell SSH đã
+được nạp sẵn conda.
 
 Dataset riêng của nhóm tại `/mnt/disk4/trangtth/data_subset/` chỉ được đọc và
 xử lý trên server. Không copy dataset này về local, không đưa vào thư mục
@@ -176,13 +193,14 @@ Quy tắc mặc định:
 
 1. Ưu tiên `tmux` với session có tên duy nhất theo experiment/job ID.
 2. Nếu không có `tmux`, dùng `nohup` hoặc cơ chế detached tương đương.
-3. Redirect đầy đủ stdout/stderr vào log trên server; không để log quan trọng
+3. Activate conda environment `scr_env` bên trong job trước khi chạy Python.
+4. Redirect đầy đủ stdout/stderr vào log trên server; không để log quan trọng
    chỉ tồn tại trong terminal SSH.
-4. Ghi lại command, thời điểm bắt đầu, commit hash, dataset path, PID hoặc
+5. Ghi lại command, thời điểm bắt đầu, commit hash, dataset path, PID hoặc
    session name, đường dẫn log và cấu hình VRAM/batch size.
-5. Sau khi khởi chạy phải kiểm tra một lần rằng process còn chạy, đúng GPU và
+6. Sau khi khởi chạy phải kiểm tra một lần rằng process còn chạy, đúng GPU và
    log đã được tạo. Sau đó có thể để job tự chạy.
-6. Khi cần báo kết quả, phải kiểm tra exit status, log cuối và output chính;
+7. Khi cần báo kết quả, phải kiểm tra exit status, log cuối và output chính;
    không suy luận job thành công chỉ vì process đã được khởi chạy.
 
 Mẫu khởi chạy được ưu tiên:
@@ -192,7 +210,7 @@ ssh vaipe_aiotlab \
   'cd /mnt/disk4/khangdp/similar_cases_retrieval && \
    mkdir -p logs && \
    tmux new-session -d -s exp_001 \
-   "bash -lc '\''<command> > logs/exp_001.log 2>&1'\''"'
+   "bash -lc '\''source \"\$(conda info --base)/etc/profile.d/conda.sh\" && conda activate scr_env && <command> > logs/exp_001.log 2>&1'\''"'
 ```
 
 Kiểm tra sau khi khởi chạy:
