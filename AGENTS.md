@@ -166,7 +166,49 @@ Trước khi báo hoàn thành một thay đổi, phải xác minh ở mức ph�
 Không báo “đã test” nếu chỉ kiểm tra bằng mắt hoặc mới chạy một phần không đại
 diện cho thay đổi.
 
-## 7. Chính sách sử dụng VRAM
+## 7. Chạy tác vụ dài trên server
+
+Mọi tác vụ trên server có khả năng chạy lâu, cần GPU hoặc không thể theo dõi
+liên tục phải được khởi chạy ở chế độ nền/detached. Không yêu cầu người dùng
+giữ SSH mở hoặc theo dõi terminal 24/7.
+
+Quy tắc mặc định:
+
+1. Ưu tiên `tmux` với session có tên duy nhất theo experiment/job ID.
+2. Nếu không có `tmux`, dùng `nohup` hoặc cơ chế detached tương đương.
+3. Redirect đầy đủ stdout/stderr vào log trên server; không để log quan trọng
+   chỉ tồn tại trong terminal SSH.
+4. Ghi lại command, thời điểm bắt đầu, commit hash, dataset path, PID hoặc
+   session name, đường dẫn log và cấu hình VRAM/batch size.
+5. Sau khi khởi chạy phải kiểm tra một lần rằng process còn chạy, đúng GPU và
+   log đã được tạo. Sau đó có thể để job tự chạy.
+6. Khi cần báo kết quả, phải kiểm tra exit status, log cuối và output chính;
+   không suy luận job thành công chỉ vì process đã được khởi chạy.
+
+Mẫu khởi chạy được ưu tiên:
+
+```bash
+ssh vaipe_aiotlab \
+  'cd /mnt/disk4/khangdp/similar_cases_retrieval && \
+   mkdir -p logs && \
+   tmux new-session -d -s exp_001 \
+   "bash -lc '\''<command> > logs/exp_001.log 2>&1'\''"'
+```
+
+Kiểm tra sau khi khởi chạy:
+
+```bash
+ssh vaipe_aiotlab \
+  'tmux has-session -t exp_001 && tail -n 40 \
+   /mnt/disk4/khangdp/similar_cases_retrieval/logs/exp_001.log'
+```
+
+Không dùng `&` đơn lẻ cho job quan trọng nếu chưa redirect log và stdin/stdout;
+job có thể chết khi SSH đóng hoặc không để lại thông tin chẩn đoán. Không khởi
+chạy trùng job GPU nếu chưa kiểm tra process/session hiện có. Log, PID, session
+metadata và output sinh ra trên server không được commit vào Git.
+
+## 8. Chính sách sử dụng VRAM
 
 Mục tiêu mặc định là dùng batch size lớn nhất chạy ổn định trên GPU server,
 không dùng một batch size nhỏ cố định chỉ vì an toàn.
@@ -197,7 +239,7 @@ nghiệm:
 Không âm thầm thay đổi precision, sequence length, sampling hoặc effective
 batch size nếu điều đó làm thay đổi khả năng so sánh giữa các thí nghiệm.
 
-## 8. Tính tái lập và chống leakage
+## 9. Tính tái lập và chống leakage
 
 Mọi pipeline hoặc thí nghiệm mới phải cố gắng lưu/ghi nhận:
 
@@ -214,7 +256,7 @@ Với dữ liệu bệnh án, phải đặc biệt kiểm tra leakage theo `subj
 Không dùng diagnosis, procedure, discharge outcome hoặc thông tin tương lai
 làm input nếu thiết kế thí nghiệm không cho phép.
 
-## 9. Bảo vệ dữ liệu
+## 10. Bảo vệ dữ liệu
 
 Không upload raw data, clinical notes, model artifact chứa dữ liệu hoặc log có
 thể nhận diện bệnh nhân lên dịch vụ bên ngoài. Không đưa nội dung bệnh án vào
@@ -223,7 +265,7 @@ commit message, issue, Markdown hoặc output báo cáo nếu không cần thi�
 Khi cần minh họa, dùng ID giả, dữ liệu mẫu tối thiểu và đường dẫn local/server
 thay vì chép nội dung clinical note vào tài liệu.
 
-## 10. Cập nhật tài liệu sau mỗi thay đổi lớn
+## 11. Cập nhật tài liệu sau mỗi thay đổi lớn
 
 - Mục tiêu/phạm vi thay đổi → `docs/PROJECT_BRIEF.md` hoặc
   `docs/REQUIREMENTS.md`.
@@ -236,7 +278,7 @@ thay vì chép nội dung clinical note vào tài liệu.
 Nếu một tài liệu chưa tồn tại, tạo nó khi thay đổi đầu tiên cần đến tài liệu
 đó; không ghi chú quan trọng chỉ trong hội thoại.
 
-## 11. Nguyên tắc làm việc của agent
+## 12. Nguyên tắc làm việc của agent
 
 Trước khi hành động, agent phải:
 
