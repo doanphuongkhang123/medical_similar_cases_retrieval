@@ -65,35 +65,35 @@ nó lên bất kỳ Git remote/dịch vụ bên ngoài nào. Khi chạy pipeline
 này, phải ghi rõ path dataset, phiên bản hoặc mốc dữ liệu, cùng các tham số
 lọc/chia dữ liệu trong log thí nghiệm.
 
-## 4. Quy tắc đồng bộ local/server
+## 4. Quy tắc đồng bộ local/server/GitHub
 
-Local Git là nơi lưu lịch sử thay đổi chính thức của mã nguồn và tài liệu.
-Server là bản sao dùng để thực thi trên dữ liệu/GPU. Hai bản phải giữ cùng
-phiên bản code trước mỗi lần chạy thí nghiệm.
+Local là **nguồn code chính thức**. Server là bản sao thực thi dùng cho dữ
+liệu và GPU. GitHub là remote private để lưu lịch sử và chia sẻ/backup code
+từ local; GitHub không phải cơ chế đồng bộ code lên server.
 
-Quy trình chuẩn khi thay đổi từ local:
+Code được đưa từ local lên server bằng `rsync`, thông qua
+`sync_to_server.sh`. Luồng chuẩn là:
 
 1. Kiểm tra thay đổi hiện tại bằng `git status` và đọc các commit gần đây.
 2. Sửa code/tài liệu trên local.
 3. Chạy smoke test local nếu phù hợp.
-4. Tạo một commit có ý nghĩa, không gom các thay đổi không liên quan.
-5. Chạy `./sync_to_server.sh` để đưa code lên server.
-6. Trên server, chạy test/thí nghiệm từ
+4. Chạy `./sync_to_server.sh` để đồng bộ code local → server.
+5. SSH vào server và chạy test/thí nghiệm từ
    `/mnt/disk4/khangdp/similar_cases_retrieval/`.
-7. Ghi commit hash, lệnh chạy, cấu hình, dataset version và kết quả vào
+6. Nếu thay đổi đạt yêu cầu, commit code trên local.
+7. Push commit từ local lên GitHub private bằng `git push origin main`.
+8. Ghi commit hash, lệnh chạy, cấu hình, dataset version và kết quả vào
    `docs/EXPERIMENTS.md` hoặc `docs/STATUS.md`.
 
 `sync_to_server.sh` hiện đồng bộ một chiều local → server và loại trừ `.git`,
-`data/`, virtualenv, checkpoint và output. Không dùng script này để đồng bộ
-ngược nếu trên server có thay đổi code chưa được đưa về local; việc đó có thể
-làm mất thay đổi trên server.
+`data/`, virtualenv, checkpoint và output. Không chạy `git pull` từ GitHub trên
+server để thay thế cho rsync. Không dùng rsync ngược nếu trên server có thay
+đổi code chưa được đưa về local; việc đó có thể làm mất thay đổi.
 
-Nếu bắt buộc sửa code trực tiếp trên server:
-
-- Ghi lại chính xác file đã sửa và lý do.
-- Đưa thay đổi về local trước khi thực hiện lần đồng bộ kế tiếp.
-- Tạo commit local sau khi kiểm tra diff.
-- Không coi output hoặc checkpoint là thay thế cho commit code.
+Không sửa code trực tiếp trên server trong quy trình thông thường. Nếu bắt
+buộc phải sửa để chẩn đoán, phải đưa diff về local, kiểm tra và commit tại
+local trước lần đồng bộ kế tiếp. Output/checkpoint trên server không thay thế
+cho code commit hoặc GitHub history.
 
 Không tự ý đổi `REMOTE_HOST`, `REMOTE_DIR`, `LOCAL_DIR` hoặc đường dẫn server
 đã quy định ở trên.
