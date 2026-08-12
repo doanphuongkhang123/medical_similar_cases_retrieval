@@ -1,8 +1,8 @@
 # Project Brief — Medical Similar Cases Retrieval
 
 **Trạng thái:** Bản nháp ban đầu
-**Phiên bản:** 0.1
-**Ngày cập nhật:** 2026-08-08
+**Phiên bản:** 0.2
+**Ngày cập nhật:** 2026-08-12
 
 ## 1. Tóm tắt dự án
 
@@ -129,17 +129,25 @@ chưa được chốt trong project brief này.
 
 ## 7. Dữ liệu và môi trường hiện có
 
-- Dataset riêng của nhóm trên server:
-  `/mnt/disk4/trangtth/data_subset/`
-- Repository code trên server:
-  `/mnt/disk4/khangdp/similar_cases_retrieval/`
+- Project root trên server: `/mnt/disk4/similar_cases_retrieval/`
+- Dataset root chuẩn: `/mnt/disk4/similar_cases_retrieval/data/`
+- Code/repository root chuẩn: `/mnt/disk4/similar_cases_retrieval/code/`
 - Host server: `vaipe_aiotlab`
 - Máy local dùng để phát triển và chạy smoke test nhỏ.
-- Dự án hiện có dữ liệu/pipeline liên quan đến MIMIC-IV, MIMIC-IV-Note,
-  clinical notes, lab events và các bài toán nhiễm khuẩn ICU.
+- Dataset root đã được kiểm tra ngày 2026-08-12 và hiện chứa dữ liệu theo các
+  nhóm `CT`, `MRI`, `XQ`, `2025 PET CT`, `PDF-grBA` cùng file metadata
+  `thông tin bệnh án.xlsx`.
+- Code root mới đã được đồng bộ từ repository local ngày 2026-08-12. Code ở
+  path legacy `/mnt/disk4/khangdp/similar_cases_retrieval/code/` vẫn được giữ
+  nguyên để đối chiếu và chưa bị xóa.
+- Pipeline local hiện tại trong `code/scr_pipeline/` được xây dựng cho
+  MIMIC-IV/MIMIC-IV-Note và lab events; chưa được xác nhận là đã map với dataset
+  ảnh/PDF/Excel ở data root mới.
 
-Chi tiết schema, cohort, label, split và data lineage phải được ghi trong
-`docs/DATA.md`, không chỉ ghi trong file này.
+Chi tiết schema, quy tắc liên kết ID giữa Excel/PDF/ảnh, cohort, label, split
+và data lineage phải được ghi trong `docs/DATA.md`, không chỉ ghi trong file
+này. Không được suy diễn quan hệ giữa các nguồn dữ liệu khi chưa kiểm tra
+schema và quy ước đặt tên trên server.
 
 ## 8. Tiêu chí thành công ban đầu
 

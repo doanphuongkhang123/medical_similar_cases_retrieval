@@ -2,9 +2,10 @@
 
 set -euo pipefail
 
-LOCAL_DIR="/Users/k/Documents/work/SimilarCasesRetrieval/"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+LOCAL_DIR="${SCRIPT_DIR}/"
 REMOTE_HOST="vaipe_aiotlab"
-REMOTE_DIR="/mnt/disk4/khangdp/similar_cases_retrieval/"
+REMOTE_DIR="/mnt/disk4/similar_cases_retrieval/code/"
 
 ssh "$REMOTE_HOST" "mkdir -p '$REMOTE_DIR'"
 

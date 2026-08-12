@@ -41,8 +41,11 @@ thay đổi các nội dung đó, phải ghi rõ nguồn, giả định và ản
 ### Server
 
 - SSH host: `vaipe_aiotlab`
-- Repository root bắt buộc: `/mnt/disk4/khangdp/similar_cases_retrieval/`
-- Dataset riêng của nhóm: `/mnt/disk4/trangtth/data_subset/`
+- Project root: `/mnt/disk4/similar_cases_retrieval/`
+- Code/repository root bắt buộc: `/mnt/disk4/similar_cases_retrieval/code/`
+- Dataset riêng của nhóm: `/mnt/disk4/similar_cases_retrieval/data/`
+- Path legacy `/mnt/disk4/khangdp/similar_cases_retrieval/` chỉ dùng để đối
+  chiếu trong thời gian chuyển đổi, không còn là đích code chuẩn.
 - Mục đích: chạy test đầy đủ, preprocessing trên dữ liệu hoàn chỉnh, huấn
   luyện, embedding, retrieval benchmark và các tác vụ GPU.
 - Conda environment ưu tiên: `scr_env`.
@@ -52,7 +55,7 @@ repository root:
 
 ```bash
 ssh vaipe_aiotlab \
-  'cd /mnt/disk4/khangdp/similar_cases_retrieval && <command>'
+  'cd /mnt/disk4/similar_cases_retrieval/code && <command>'
 ```
 
 Không đổi sang một đường dẫn repository khác trên server. Không chạy toàn bộ
@@ -75,7 +78,7 @@ không tồn tại. Khi environment bị thiếu hoặc không hợp lệ, báo 
 phải source conda trước khi `conda activate`; không giả định rằng shell SSH đã
 được nạp sẵn conda.
 
-Dataset riêng của nhóm tại `/mnt/disk4/trangtth/data_subset/` chỉ được đọc và
+Dataset riêng của nhóm tại `/mnt/disk4/similar_cases_retrieval/data/` chỉ được đọc và
 xử lý trên server. Không copy dataset này về local, không đưa vào thư mục
 repository, không đồng bộ qua `sync_to_server.sh`, và không commit hoặc upload
 nó lên bất kỳ Git remote/dịch vụ bên ngoài nào. Khi chạy pipeline với dataset
@@ -96,14 +99,16 @@ Code được đưa từ local lên server bằng `rsync`, thông qua
 3. Chạy smoke test local nếu phù hợp.
 4. Chạy `./sync_to_server.sh` để đồng bộ code local → server.
 5. SSH vào server và chạy test/thí nghiệm từ
-   `/mnt/disk4/khangdp/similar_cases_retrieval/`.
+   `/mnt/disk4/similar_cases_retrieval/code/`.
 6. Nếu thay đổi đạt yêu cầu, commit code trên local.
 7. Push commit từ local lên GitHub private bằng `git push origin main`.
 8. Ghi commit hash, lệnh chạy, cấu hình, dataset version và kết quả vào
    `docs/EXPERIMENTS.md` hoặc `docs/STATUS.md`.
 
-`sync_to_server.sh` hiện đồng bộ một chiều local → server và loại trừ `.git`,
-`data/`, virtualenv, checkpoint và output. Không chạy `git pull` từ GitHub trên
+`sync_to_server.sh` (Bash) và `sync_to_server.ps1` (Windows PowerShell) đồng bộ
+một chiều local → server và loại trừ `.git`, `data/`, virtualenv, checkpoint và
+output. Trước khi chạy phải kiểm tra `REMOTE_DIR` là
+`/mnt/disk4/similar_cases_retrieval/code/`. Không chạy `git pull` từ GitHub trên
 server để thay thế cho rsync. Không dùng rsync ngược nếu trên server có thay
 đổi code chưa được đưa về local; việc đó có thể làm mất thay đổi.
 
@@ -207,7 +212,7 @@ Mẫu khởi chạy được ưu tiên:
 
 ```bash
 ssh vaipe_aiotlab \
-  'cd /mnt/disk4/khangdp/similar_cases_retrieval && \
+  'cd /mnt/disk4/similar_cases_retrieval/code && \
    mkdir -p logs && \
    tmux new-session -d -s exp_001 \
    "bash -lc '\''source \"\$(conda info --base)/etc/profile.d/conda.sh\" && conda activate scr_env && <command> > logs/exp_001.log 2>&1'\''"'
@@ -218,7 +223,7 @@ Kiểm tra sau khi khởi chạy:
 ```bash
 ssh vaipe_aiotlab \
   'tmux has-session -t exp_001 && tail -n 40 \
-   /mnt/disk4/khangdp/similar_cases_retrieval/logs/exp_001.log'
+   /mnt/disk4/similar_cases_retrieval/code/logs/exp_001.log'
 ```
 
 Không dùng `&` đơn lẻ cho job quan trọng nếu chưa redirect log và stdin/stdout;
