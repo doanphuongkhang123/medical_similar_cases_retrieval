@@ -1,7 +1,7 @@
 # Handoff — Medical Similar Cases Retrieval
 
 **Ngày cập nhật:** 2026-08-12
-**Trạng thái:** Đã xác minh path, khôi phục Git và đồng bộ code; chưa chốt data mapping
+**Trạng thái:** GT-BEHRT-Visit structured full-visit baseline đã sinh embedding; chưa có đánh giá clinical retrieval
 
 ## 1. Path chuẩn trên server
 
@@ -70,4 +70,17 @@ hoặc đưa vào Git.
 
 - Chưa xác minh schema và khóa liên kết giữa Excel, PDF và các modality ảnh.
 - Chưa chốt đơn vị retrieval và định nghĩa ca “tương tự”.
-- Chưa có `docs/DATA.md`, `docs/ARCHITECTURE.md` và `docs/EXPERIMENTS.md`.
+- Data contract, kiến trúc và kết quả baseline hiện được ghi tại `docs/DATA.md`,
+  `docs/ARCHITECTURE.md` và `docs/EXPERIMENTS.md`.
+
+## 6. Cập nhật GT-BEHRT-Visit (2026-08-12)
+
+- Đã thêm `code/ehr_graph_pipeline/` cho canonicalization, sparse visit graph,
+  masked-node Graph Transformer pretraining và export embedding.
+- Đã chạy full-visit baseline trên workbook server và tạo embedding 256 chiều,
+  L2-normalize cho 3.500 `SoBenhAn`. Artifact chỉ ở server data root.
+- `docs/DATA.md`, `docs/ARCHITECTURE.md`, `docs/EXPERIMENTS.md` mô tả data
+  contract, kiến trúc, split tạm thời và kết quả chạy.
+- Các vector hiện là self-supervised baseline, chưa được clinical validation;
+  không được dùng để đưa ra kết luận về chất lượng retrieval trước khi có nhãn
+  relevance và patient ID pseudonymized cho split chống leakage.
