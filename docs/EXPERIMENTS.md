@@ -11,11 +11,13 @@
 - **Split:** deterministic visit-disjoint 70/15/15, seed `20260812`; not patient-disjoint because no approved pseudonymized patient ID is available.
 - **Model:** 2-layer relation-aware GT-BEHRT-Visit, hidden/output dimension 256, 4 heads, dropout 0.2.
 - **Pretraining:** masked node-concept prediction, mask rate 15%, 5 epochs, 2,464 train graphs. Loss by epoch: 2.8682, 2.2787, 2.1282, 2.0438, 1.9894.
-- **Artifacts (server only):**
-  - `/mnt/disk4/similar_cases_retrieval/data/ehr_graph_preprocessed/`
-  - `/mnt/disk4/similar_cases_retrieval/data/ehr_graph_dataset/`
-  - `/mnt/disk4/similar_cases_retrieval/data/ehr_graph_model/gt_behrt_visit.pt`
-  - `/mnt/disk4/similar_cases_retrieval/data/ehr_graph_embeddings/visit_embeddings.parquet`
+- **Run directory (server only):**
+  `/mnt/disk4/similar_cases_retrieval/data/experiments/gt_behrt_visit_20260812/`
+  - `preprocessed/`: canonical tables, split and feature artifacts
+  - `graphs/`: independent visit graphs and index
+  - `model/gt_behrt_visit.pt`: masked-node pretrained checkpoint
+  - `embeddings/visit_embeddings.parquet`: visit vectors
+  - `logs/`: commands' stdout/stderr
 
 This produces model-trained vectors only. It does not validate clinical
 similarity or retrieval quality: relevance labels and patient-disjoint split

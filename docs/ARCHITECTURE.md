@@ -26,6 +26,10 @@ supervised similarity training remain future work described in
 checkpoint makes the artifact model-derived, but not clinically validated;
 retrieval metrics need an approved relevance definition.
 
+Each experiment must write all derived data, checkpoint, embeddings and logs to
+one server-only run directory: `data/experiments/<experiment_id>/`. The source
+workbook remains outside this directory and is read-only.
+
 ## Đầu vào GNN theo thiết kế một visit — một graph
 
 Pipeline `preprocess_ehr_tables.py` tạo đồng thời hai cách nhìn của cùng dữ

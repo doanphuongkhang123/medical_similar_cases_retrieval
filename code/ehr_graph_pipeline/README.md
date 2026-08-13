@@ -19,13 +19,15 @@ cd /mnt/disk4/similar_cases_retrieval/code
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate /mnt/disk1/khangdp/conda_envs/scr_env
 
+RUN_DIR=/mnt/disk4/similar_cases_retrieval/data/experiments/gt_behrt_visit_001
+mkdir -p "$RUN_DIR"
 python code/ehr_graph_pipeline/preprocess_ehr.py \
   --workbook '/mnt/disk4/similar_cases_retrieval/data/thông tin bệnh án.xlsx' \
-  --output /mnt/disk4/similar_cases_retrieval/data/ehr_graph_preprocessed \
+  --output "$RUN_DIR/preprocessed" \
   --snapshot-mode full_visit
 python code/ehr_graph_pipeline/build_visit_graphs.py \
-  --input /mnt/disk4/similar_cases_retrieval/data/ehr_graph_preprocessed \
-  --output /mnt/disk4/similar_cases_retrieval/data/ehr_graph_dataset
+  --input "$RUN_DIR/preprocessed" \
+  --output "$RUN_DIR/graphs"
 ```
 
 Pretrain the checkpoint on the train split before embedding. This is a
@@ -34,15 +36,15 @@ claim; label-based evaluation remains required.
 
 ```bash
 python code/ehr_graph_pipeline/pretrain_graph_encoder.py \
-  --graphs /mnt/disk4/similar_cases_retrieval/data/ehr_graph_dataset \
-  --canonical /mnt/disk4/similar_cases_retrieval/data/ehr_graph_preprocessed \
-  --output /mnt/disk4/similar_cases_retrieval/data/ehr_graph_model/gt_behrt_visit.pt \
+  --graphs "$RUN_DIR/graphs" \
+  --canonical "$RUN_DIR/preprocessed" \
+  --output "$RUN_DIR/model/gt_behrt_visit.pt" \
   --epochs 5
 python code/ehr_graph_pipeline/embed_visits.py \
-  --graphs /mnt/disk4/similar_cases_retrieval/data/ehr_graph_dataset \
-  --canonical /mnt/disk4/similar_cases_retrieval/data/ehr_graph_preprocessed \
-  --output /mnt/disk4/similar_cases_retrieval/data/ehr_graph_embeddings \
-  --checkpoint /path/to/gt_behrt_visit.pt
+  --graphs "$RUN_DIR/graphs" \
+  --canonical "$RUN_DIR/preprocessed" \
+  --output "$RUN_DIR/embeddings" \
+  --checkpoint "$RUN_DIR/model/gt_behrt_visit.pt"
 ```
 
 Full pretraining is intentionally not launched until the pending snapshot,
