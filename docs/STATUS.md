@@ -187,3 +187,15 @@ hoặc đưa vào Git.
   2/2 test preprocessing mới và 5/5 test toàn bộ EHR graph pipeline pass.
 - Package đã có sẵn: numpy 2.4.6, pandas 3.0.5, openpyxl 3.1.5,
   pyarrow 25.0.1 và PyYAML 6.0.3; không cài thêm package trong lần này.
+
+## 9. Tổng hợp EHR và image–report audit (2026-08-14)
+
+- Tài liệu handoff đầy đủ được lưu tại
+  `docs/EHR_PREPROCESS_AND_IMAGE_REPORT_AUDIT.md`.
+- Đã xác minh một ZIP CT có cả CT scout, Enhanced SR dose record và Secondary
+  Capture dose-report screen save trong cùng study.
+- Dose report là technical radiation report, không phải kết luận chẩn đoán của
+  bác sĩ; phải phân loại riêng và khử định danh burned-in text trước khi dùng.
+- Hai gói EHR full/preview đã giải nén tại
+  `/mnt/disk4/similar_cases_retrieval/data/ehr_preprocessed/`; checksum của
+  toàn bộ CSV sau giải nén khớp manifest.
