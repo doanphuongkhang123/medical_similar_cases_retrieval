@@ -27,6 +27,7 @@ code/.venv/
 data/
 datasets/
 outputs/
+preprocessed/
 checkpoints/
 experiments/runs/
 runs/

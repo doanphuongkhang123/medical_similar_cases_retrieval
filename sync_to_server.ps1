@@ -24,6 +24,7 @@ try {
         --exclude=datasets `
         --exclude=checkpoints `
         --exclude=outputs `
+        --exclude=preprocessed `
         -C $localRoot .
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to create sync archive."

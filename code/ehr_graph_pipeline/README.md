@@ -48,3 +48,19 @@ python code/ehr_graph_pipeline/embed_visits.py \
 Full pretraining is intentionally not launched until the pending snapshot,
 patient split, text-policy, and similarity-label decisions in
 `docs/GT_BEHRT_VISIT_PIPELINE.md` are approved.
+
+## Create a relationally consistent CSV preview
+
+The preview command samples visits first, then retains all related event rows,
+graph nodes, and graph edges. This keeps each sampled visit graph complete.
+
+```powershell
+python code/preprocess_code/create_csv_preview.py `
+  --input preprocessed/csv `
+  --output preprocessed/preview_100_visits `
+  --n-visits 100 `
+  --seed 20260813
+```
+
+The command refuses to overwrite an existing output directory. Its metadata
+records the seed, row counts, and graph-integrity validation results.

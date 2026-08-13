@@ -29,6 +29,27 @@ thay đổi các nội dung đó, phải ghi rõ nguồn, giả định và ản
 `docs/DATA.md`, `docs/REQUIREMENTS.md` hoặc `docs/DECISIONS.md` nếu các file
 đó đã tồn tại.
 
+## 2.1. Ràng buộc truy cập dữ liệu hiện hành (2026-08-13)
+
+Yêu cầu mới nhất của người dùng xác định rõ môi trường được phép truy cập:
+
+- Chỉ được **đọc** dữ liệu thật trên môi trường/máy được người dùng gọi là
+  `vaipe`, được truy cập qua SSH host `vaipe_aiotlab`.
+- Khi đã xác định đúng môi trường `vaipe`, agent được tự chủ thực hiện các
+  thao tác đọc và thống kê read-only mà không cần xin phép lại từng lần.
+- Không được sửa, xóa, di chuyển, đổi tên hoặc sinh artifact vào vùng dữ liệu
+  trên `vaipe`; mọi thao tác với dữ liệu thật mặc định là read-only.
+- Dataset được phép đọc là
+  `/mnt/disk4/similar_cases_retrieval/data/` trên chính host
+  `vaipe_aiotlab`.
+- Được tự chủ cài package cần thiết vào environment hiện có
+  `/mnt/disk1/khangdp/conda_envs/scr_env`; phải ghi lại tên/version package
+  đã cài. Không tự tạo hoặc chuyển sang environment khác.
+- Không được truy cập bất kỳ server data center/host nào khác nếu người dùng
+  chưa cho phép rõ ràng. Không suy diễn host khác là alias của `vaipe`.
+- Vẫn được đọc/sửa code và tài liệu trong repository local, và chỉ dùng
+  fixture giả không chứa dữ liệu bệnh nhân để kiểm thử local.
+
 ## 3. Hai môi trường làm việc
 
 ### Máy local
@@ -38,7 +59,7 @@ thay đổi các nội dung đó, phải ghi rõ nguồn, giả định và ản
   lịch sử Git.
 - Không giả định máy local có toàn bộ dữ liệu MIMIC hoặc GPU đủ lớn.
 
-### Server
+### Vaipe — được phép đọc dữ liệu
 
 - SSH host: `vaipe_aiotlab`
 - Project root: `/mnt/disk4/similar_cases_retrieval/`
@@ -57,6 +78,9 @@ repository root:
 ssh vaipe_aiotlab \
   'cd /mnt/disk4/similar_cases_retrieval/code && <command>'
 ```
+
+Được thực thi lệnh SSH trên để đọc schema, metadata và thống kê dữ liệu. Không
+được ghi hoặc tạo artifact trong dataset root nếu chưa có yêu cầu rõ ràng.
 
 Không đổi sang một đường dẫn repository khác trên server. Không chạy toàn bộ
 dataset, huấn luyện hoặc embedding nặng trên local trừ khi người dùng yêu

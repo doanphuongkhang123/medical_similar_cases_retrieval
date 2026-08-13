@@ -20,6 +20,7 @@ rsync -avzh --progress \
   --exclude='datasets/' \
   --exclude='checkpoints/' \
   --exclude='outputs/' \
+  --exclude='preprocessed/' \
   "$LOCAL_DIR" \
   "${REMOTE_HOST}:${REMOTE_DIR}"
 

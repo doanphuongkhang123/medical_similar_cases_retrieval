@@ -25,3 +25,32 @@ supervised similarity training remain future work described in
 `snapshot_mode`, `embedding_version`, and `embedding` (float32[256]). A
 checkpoint makes the artifact model-derived, but not clinically validated;
 retrieval metrics need an approved relevance definition.
+
+## Đầu vào GNN theo thiết kế một visit — một graph
+
+Pipeline `preprocess_ehr_tables.py` tạo đồng thời hai cách nhìn của cùng dữ
+liệu:
+
+```text
+Một dòng Visit_EHR
+├── diagnosis: danh sách chẩn đoán
+├── medicine: danh sách thuốc
+├── procedure: danh sách dịch vụ/thủ thuật
+└── clinical_note: ghi chú và báo cáo đã ghép theo phần
+          │
+          ▼
+Một graph cho một visit
+├── 1 nút VISIT
+├── nhiều nút DIAGNOSIS
+├── nhiều nút MEDICINE
+├── nhiều nút PROCEDURE
+├── nhiều nút NOTE
+└── nhiều nút OBSERVATION
+```
+
+Mọi nút con nối hai chiều với `VISIT`. Khi có `order_id`, `PROCEDURE` còn nối
+với `OBSERVATION` bằng `has_result/result_of` và với `NOTE` bằng
+`has_report/report_of`. `graph_id = patient_id::visit_id`. Bước tiếp theo chỉ
+cần mã hóa thuộc tính từng loại nút, đưa `graph_nodes` và `graph_edges` vào
+GNN, rồi lấy đầu ra của nút `VISIT` hoặc phép gộp toàn graph làm embedding của
+lượt khám.
