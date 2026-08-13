@@ -4,7 +4,7 @@ set -euo pipefail
 
 if [[ $# -eq 1 ]]; then
   run_dir="$1"
-  workbook="/mnt/disk4/similar_cases_retrieval/data/thông tin bệnh án.xlsx"
+  workbook="/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx"
 elif [[ $# -eq 2 ]]; then
   run_dir="$1"
   workbook="$2"

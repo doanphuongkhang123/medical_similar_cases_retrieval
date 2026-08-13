@@ -3,7 +3,7 @@
 ## 2026-08-12 — GT-BEHRT-Visit structured full-visit baseline
 
 - **Host/environment:** `vaipe_aiotlab`, `/mnt/disk1/khangdp/conda_envs/scr_env`, Python 3.11.15.
-- **Source dataset:** `/mnt/disk4/similar_cases_retrieval/data/thông tin bệnh án.xlsx` (server-only; no raw data copied to local or Git).
+- **Source dataset:** `/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx` (server-only; no raw data copied to local or Git).
 - **Observation policy:** `full_visit`, retrospective only.
 - **Graph unit:** `SoBenhAn`; 3,500 visits.
 - **Canonical result:** 760,276 event nodes, 542,760 business relations, 0 unmatched lab-order links.

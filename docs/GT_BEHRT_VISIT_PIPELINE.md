@@ -58,7 +58,7 @@ Các quyết định hiện tại:
 Nguồn dữ liệu trên `vaipe`, được phép truy cập read-only:
 
 ```text
-/mnt/disk4/similar_cases_retrieval/data/thông tin bệnh án.xlsx
+/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx
 ```
 
 Workbook có 5 sheet:

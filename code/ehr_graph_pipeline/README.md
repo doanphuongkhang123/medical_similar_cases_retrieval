@@ -22,7 +22,7 @@ conda activate /mnt/disk1/khangdp/conda_envs/scr_env
 RUN_DIR=/mnt/disk4/similar_cases_retrieval/data/experiments/gt_behrt_visit_001
 mkdir -p "$RUN_DIR"
 python code/ehr_graph_pipeline/preprocess_ehr.py \
-  --workbook '/mnt/disk4/similar_cases_retrieval/data/thông tin bệnh án.xlsx' \
+  --workbook '/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx' \
   --output "$RUN_DIR/preprocessed" \
   --snapshot-mode full_visit
 python code/ehr_graph_pipeline/build_visit_graphs.py \

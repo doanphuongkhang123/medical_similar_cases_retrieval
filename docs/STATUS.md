@@ -36,16 +36,17 @@ artifact vào dataset root.
 
 ## 2. Data mapping cấp cao đã xác minh
 
-Dataset root hiện có các nhóm dữ liệu cấp cao:
+Raw data nằm trong `data/raw/`; dataset root chỉ chứa raw, experiment và
+processed-area cấp cao.
 
 | Thành phần | Path dưới dataset root | Vai trò dự kiến | Trạng thái mapping |
 |---|---|---|---|
-| CT | `CT/` | Ảnh CT | Chưa xác minh schema/ID |
-| MRI | `MRI/` | Ảnh MRI | Chưa xác minh schema/ID |
-| X-quang | `XQ/` | Ảnh X-quang | Chưa xác minh schema/ID |
-| PET/CT | `2025 PET CT/` | Ảnh PET/CT | Chưa xác minh schema/ID |
-| PDF | `PDF-grBA/` | Tài liệu/bệnh án dạng PDF | Chưa xác minh schema/ID |
-| Metadata | `thông tin bệnh án.xlsx` | Metadata bệnh án | Chưa đọc schema cột |
+| CT | `raw/CT/` | Ảnh CT | Chưa xác minh schema/ID |
+| MRI | `raw/MRI/` | Ảnh MRI | Chưa xác minh schema/ID |
+| X-quang | `raw/XQ/` | Ảnh X-quang | Chưa xác minh schema/ID |
+| PET/CT | `raw/2025 PET CT/` | Ảnh PET/CT | Chưa xác minh schema/ID |
+| PDF | `raw/PDF-grBA/` | Tài liệu/bệnh án dạng PDF | Chưa xác minh schema/ID |
+| Metadata | `raw/thông tin bệnh án.xlsx` | Metadata bệnh án | Chưa đọc schema cột |
 
 Tên thư mục chỉ cho biết loại nguồn dữ liệu. Chưa được coi chúng là đã liên
 kết theo bệnh nhân, ca khám hoặc study cho đến khi kiểm tra schema Excel, tên

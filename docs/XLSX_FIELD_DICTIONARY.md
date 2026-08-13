@@ -1,6 +1,6 @@
 # Từ điển dữ liệu và cách chuẩn hóa tệp XLSX
 
-**Nguồn:** tệp Excel duy nhất trong `/mnt/disk4/similar_cases_retrieval/data/`
+**Nguồn:** tệp Excel duy nhất trong `/mnt/disk4/similar_cases_retrieval/data/raw/`
 trên `vaipe_aiotlab`
 
 **Ngày kiểm tra:** 2026-08-13

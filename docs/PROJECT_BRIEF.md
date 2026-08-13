@@ -134,9 +134,9 @@ chưa được chốt trong project brief này.
 - Code/repository root chuẩn: `/mnt/disk4/similar_cases_retrieval/code/`
 - Host server: `vaipe_aiotlab`
 - Máy local dùng để phát triển và chạy smoke test nhỏ.
-- Dataset root đã được kiểm tra ngày 2026-08-12 và hiện chứa dữ liệu theo các
-  nhóm `CT`, `MRI`, `XQ`, `2025 PET CT`, `PDF-grBA` cùng file metadata
-  `thông tin bệnh án.xlsx`.
+- Raw data nằm tại `data/raw/`: các nhóm `CT`, `MRI`, `XQ`, `2025 PET CT`,
+  `PDF-grBA` cùng file metadata `thông tin bệnh án.xlsx`. Derived artifact
+  phải nằm trong `data/experiments/<experiment_id>/` hoặc khu vực xử lý riêng.
 - Code root mới đã được đồng bộ từ repository local ngày 2026-08-12. Code ở
   path legacy `/mnt/disk4/khangdp/similar_cases_retrieval/code/` vẫn được giữ
   nguyên để đối chiếu và chưa bị xóa.

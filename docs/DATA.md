@@ -1,7 +1,8 @@
 # Data contract — GT-BEHRT-Visit
 
 **Dataset host:** `vaipe` via SSH host `vaipe_aiotlab`
-**Dataset path (read-only):** `/mnt/disk4/similar_cases_retrieval/data/thông tin bệnh án.xlsx`
+**Raw data path (read-only):** `/mnt/disk4/similar_cases_retrieval/data/raw/`
+**Workbook:** `/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx`
 **Graph unit:** one `SoBenhAn` = one visit graph.
 **Baseline snapshot:** `full_visit` (retrospective retrieval only).
 

@@ -23,7 +23,7 @@ source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate /mnt/disk1/khangdp/conda_envs/scr_env
 
 python code/preprocess_code/preprocess_ehr_tables.py \
-  --workbook '/mnt/disk4/similar_cases_retrieval/data/thông tin bệnh án.xlsx' \
+  --workbook '/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx' \
   --output /tmp/ehr_preprocessed
 
 python code/preprocess_code/export_parquet_to_csv.py \
