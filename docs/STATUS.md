@@ -199,3 +199,17 @@ hoặc đưa vào Git.
 - Hai gói EHR full/preview đã giải nén tại
   `/mnt/disk4/similar_cases_retrieval/data/ehr_preprocessed/`; checksum của
   toàn bộ CSV sau giải nén khớp manifest.
+
+## 10. Supervised retrieval pipeline (2026-08-14)
+
+- Đã thêm pipeline tạo candidate để review, fine-tune projection từ pairwise
+  relevance label, và đánh giá `Precision@k`/`mAP@k`/`nDCG@k` tại
+  `code/ehr_graph_pipeline/supervised_retrieval.py`.
+- Contract nhãn và lệnh chạy được ghi tại `docs/RETRIEVAL_PIPELINE.md`; code
+  không tự suy diễn relevance từ ICD, diagnosis, medication hoặc outcome.
+- Test fixture giả trên `vaipe_aiotlab`, Python
+  `/mnt/disk1/khangdp/conda_envs/scr_env/bin/python` 3.11.15: 5/5 pass.
+- SSH shell `zsh` hiện không expose lệnh `conda`; pipeline dùng trực tiếp
+  executable đã xác minh của `scr_env`, không đổi sang environment khác.
+- Chưa chạy pipeline trên dữ liệu thật và chưa tạo retrieval artifact; blocker
+  là rubric relevance được phê duyệt cùng split patient-disjoint.

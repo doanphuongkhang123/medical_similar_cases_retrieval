@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).parents[1]))
 from build_visit_graphs import graph_for_visit
 from ehr_common import parse_lab_value
 from preprocess_ehr import apply_snapshot, canonicalize, fit_artifacts, split_visits
+from supervised_retrieval import candidate_frame, fit_projection, project, ranking_metrics
 
 
 POLICY = {
@@ -65,6 +66,40 @@ class PipelineTest(unittest.TestCase):
         )
         self.assertEqual(tuple(vector.shape), (16,))
         self.assertTrue(torch.allclose(vector.norm(), torch.tensor(1.0), atol=1e-6))
+
+    def test_retrieval_candidates_and_judged_metrics(self) -> None:
+        frame = pd.DataFrame({
+            "visit_id": ["T1", "T2", "V1"],
+            "split": ["train", "train", "validation"],
+            "embedding": [[1.0, 0.0], [0.0, 1.0], [0.9, 0.1]],
+        })
+        vectors = np.asarray(frame.embedding.tolist(), dtype=np.float32)
+        candidates = candidate_frame(frame, vectors, "validation", "train", top_k=1, random_k=1, seed=7)
+        self.assertEqual(len(candidates), 2)
+        pairs = candidates.assign(relevance=[2, 0], partition="test")
+        report = ranking_metrics(frame, vectors, pairs, "test", [1, 2])
+        self.assertEqual(report["evaluation_scope"], "judged_candidate_set_only")
+        self.assertEqual(report["queries"], 1)
+        self.assertAlmostEqual(report["metrics"]["precision_at_1"], 1.0)
+
+    def test_supervised_projection_uses_train_pairs_and_normalizes_vectors(self) -> None:
+        frame = pd.DataFrame({
+            "visit_id": ["T1", "T2", "T3", "V1"],
+            "split": ["train", "train", "train", "validation"],
+            "embedding": [[1.0, 0.0], [0.8, 0.2], [0.0, 1.0], [0.7, 0.3]],
+        })
+        vectors = np.asarray(frame.embedding.tolist(), dtype=np.float32)
+        pairs = pd.DataFrame({
+            "query_visit_id": ["T1", "T1"],
+            "candidate_visit_id": ["T2", "T3"],
+            "relevance": [2, 0],
+            "partition": ["train", "train"],
+        })
+        checkpoint, manifest = fit_projection(frame, vectors, pairs, dimension=2, epochs=2, learning_rate=1e-2, seed=7, device="cpu")
+        projected = project(frame, vectors, checkpoint, device="cpu")
+        norms = np.linalg.norm(np.asarray(projected.embedding.tolist(), dtype=np.float32), axis=1)
+        self.assertEqual(manifest["train_pairs"], 2)
+        self.assertTrue(np.allclose(norms, 1.0, atol=1e-6))
 
 
 if __name__ == "__main__":

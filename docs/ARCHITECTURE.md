@@ -30,6 +30,26 @@ Each experiment must write all derived data, checkpoint, embeddings and logs to
 one server-only run directory: `data/experiments/<experiment_id>/`. The source
 workbook remains outside this directory and is read-only.
 
+## Supervised retrieval-improvement stage
+
+After self-supervised embedding export, the optional supervised retrieval path
+is deliberately decoupled from the graph encoder:
+
+```text
+visit_embeddings.parquet
+  -> top-k + random annotation candidates (no inferred labels)
+  -> externally reviewed ordinal relevance pairs
+  -> train-only linear projection + L2 normalization
+  -> supervised_visit_embeddings.parquet
+  -> Precision@k / mAP@k / nDCG@k on judged held-out candidates
+```
+
+The projection is trained only on pairs whose visits are in the train split.
+It cannot certify patient-disjointness from the current `visit_id` contract;
+that requires an approved pseudonymized patient identifier and split audit.
+Unreviewed candidates are never silently treated as negative labels, so the
+reported evaluation scope is explicitly the judged candidate set.
+
 ## Đầu vào GNN theo thiết kế một visit — một graph
 
 Pipeline `preprocess_ehr_tables.py` tạo đồng thời hai cách nhìn của cùng dữ

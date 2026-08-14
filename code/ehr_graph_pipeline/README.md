@@ -51,6 +51,15 @@ Full pretraining is intentionally not launched until the pending snapshot,
 patient split, text-policy, and similarity-label decisions in
 `docs/GT_BEHRT_VISIT_PIPELINE.md` are approved.
 
+## Supervised retrieval improvement
+
+`supervised_retrieval.py` adds the clinical-validation stage without making a
+clinical assumption from ICD codes or outcomes.  It first creates a candidate
+file for expert review, then learns a small L2-normalized projection only from
+the reviewed `train` pairs, and finally evaluates ranking on a disjoint set of
+reviewed pairs.  See `docs/RETRIEVAL_PIPELINE.md` for the required reviewed
+pair contract and server-only run commands.
+
 ## Create a relationally consistent CSV preview
 
 The preview command samples visits first, then retains all related event rows,
