@@ -10,7 +10,10 @@ import numpy as np
 import pandas as pd
 import torch
 
-from rfssl.data import GraphExample, MISSING_TIME_BUCKET, RELATION_TO_ID, TYPE_TO_ID, load_structured_dataset
+from rfssl.data import (
+    GraphExample, MISSING_TIME_BUCKET, RELATION_TO_ID, TYPE_TO_ID,
+    _aggregate_medicines, _build_graph, load_structured_dataset,
+)
 from rfssl.model import StructuredGraphSSL
 from rfssl.objectives import (
     choose_mask_indices,
@@ -56,7 +59,7 @@ class StructuredSSLTest(unittest.TestCase):
         self.assertEqual(graph["concept_ids"].tolist()[1], self.vocab["<MASK>"])
         self.assertEqual(float(graph["numeric"][2, 6]), 1.0)
         self.assertEqual(graph["time_buckets"].tolist(), [0, 0, 30, 30])
-        model = StructuredGraphSSL(vocab_size=len(self.vocab), node_type_count=5, relation_count=12, hidden_dim=32, output_dim=16, layers=2, heads=4, dropout=0.0)
+        model = StructuredGraphSSL(vocab_size=len(self.vocab), node_type_count=5, relation_count=len(RELATION_TO_ID), hidden_dim=32, output_dim=16, layers=2, heads=4, dropout=0.0)
         hidden, embedding = model(**graph)
         self.assertEqual(tuple(hidden.shape), (4, 32))
         self.assertEqual(tuple(embedding.shape), (16,))
@@ -74,7 +77,7 @@ class StructuredSSLTest(unittest.TestCase):
 
     def test_inf_ehr_style_objective_is_finite(self) -> None:
         graph = self.example.tensors(self.vocab, self.stats, torch.device("cpu"), concept_mask=[1])
-        model = StructuredGraphSSL(vocab_size=len(self.vocab), node_type_count=5, relation_count=12, hidden_dim=32, output_dim=16, layers=2, heads=4, dropout=0.0)
+        model = StructuredGraphSSL(vocab_size=len(self.vocab), node_type_count=5, relation_count=len(RELATION_TO_ID), hidden_dim=32, output_dim=16, layers=2, heads=4, dropout=0.0)
         hidden_one, _, raw_one = model(return_raw=True, **graph)
         hidden_two, _, raw_two = model(return_raw=True, **graph)
         corrupted = corrupt_graph_for_mi(graph)
@@ -106,7 +109,7 @@ class StructuredSSLTest(unittest.TestCase):
 
     def test_stage_three_exports_encoder_embedding_not_projector(self) -> None:
         graph = self.example.tensors(self.vocab, self.stats, torch.device("cpu"))
-        model = StructuredGraphSSL(vocab_size=len(self.vocab), node_type_count=5, relation_count=12, hidden_dim=32, output_dim=16, layers=2, heads=4, dropout=0.0)
+        model = StructuredGraphSSL(vocab_size=len(self.vocab), node_type_count=5, relation_count=len(RELATION_TO_ID), hidden_dim=32, output_dim=16, layers=2, heads=4, dropout=0.0)
         model.eval()
         with torch.no_grad():
             _, expected = model(**graph)
@@ -224,6 +227,35 @@ class StructuredSSLTest(unittest.TestCase):
                 pd.DataFrame({"visit_id": []}).to_csv(root / f"{table}.csv", index=False)
             dataset = load_structured_dataset(root)
         self.assertEqual(dataset.examples[0].node_types, (TYPE_TO_ID["VISIT"],))
+
+    def test_repeated_medicine_is_bucketed_and_temporally_linked(self) -> None:
+        frame = pd.DataFrame({
+            "visit_id": ["fixture-v1"] * 3,
+            "drug_name": ["fixture-drug"] * 3,
+            "active_ingredient": ["fixture-active"] * 3,
+            "route": ["oral"] * 3,
+            "unit": ["tablet"] * 3,
+            "total_quantity": [1.0, 2.0, 4.0],
+            "prescribed_time": [
+                "2026-01-01T01:00:00Z",
+                "2026-01-02T01:00:00Z",
+                "2026-01-02T02:00:00Z",
+            ],
+            "status": ["prescribed"] * 3,
+        })
+        events = [event for _, event in _aggregate_medicines(
+            frame, {"fixture-v1": pd.Timestamp("2026-01-01T00:00:00Z")},
+        )]
+        self.assertEqual([(event.count, event.numeric_value, event.time_hours) for event in events], [
+            (1, 1.0, 1.0), (2, 3.0, 25.0),
+        ])
+        graph = _build_graph("fixture-v1", "train", events)
+        self.assertIn(
+            (1, 2, RELATION_TO_ID["next_same_medication"]), graph.edges,
+        )
+        self.assertIn(
+            (2, 1, RELATION_TO_ID["prev_same_medication"]), graph.edges,
+        )
 
 
 if __name__ == "__main__":

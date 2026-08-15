@@ -27,7 +27,7 @@ import torch
 from torch import Tensor
 import torch.nn.functional as F
 
-from .data import GraphExample, StructuredDataset, load_structured_dataset
+from .data import GraphExample, RELATIONS, StructuredDataset, load_structured_dataset
 from .model import StructuredGraphSSL
 from .objectives import (
     choose_mask_indices,
@@ -78,7 +78,7 @@ def _model_config(args: argparse.Namespace, dataset: StructuredDataset) -> dict[
     return {
         "vocab_size": len(dataset.vocab),
         "node_type_count": 5,
-        "relation_count": 12,
+        "relation_count": len(RELATIONS),
         "hidden_dim": args.hidden_dim,
         "output_dim": args.output_dim,
         "layers": args.layers,

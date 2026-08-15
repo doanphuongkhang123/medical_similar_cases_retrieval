@@ -22,6 +22,8 @@ The v1 safety contract is:
 - concept masking separately by node type; an augmented view keeps at least one
   Diagnosis, Medicine, and Procedure concept whenever that type is present;
 - numeric dual-mask loss only for observed Observation values;
+- repeated medicines are grouped only within a 24-hour relative-time bucket;
+  repeated buckets of the same medicine are connected in chronological order;
 - MNP samples node type uniformly then uses IDF within that type, and never
   removes the sole core node;
 - Stage 3 MI uses a same-type, exact-24-hour categorical corruption *before*

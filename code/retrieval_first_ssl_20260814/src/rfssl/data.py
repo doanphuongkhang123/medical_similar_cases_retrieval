@@ -30,10 +30,12 @@ RELATIONS = (
     "has_observation", "observation_of",
     "has_result", "result_of",
     "next_same_test", "prev_same_test",
+    "next_same_medication", "prev_same_medication",
 )
 RELATION_TO_ID = {name: index for index, name in enumerate(RELATIONS)}
 
 FEATURE_DIMENSION = 7  # normalized value, count, time, flags incl. augmented mask
+MEDICATION_TIME_BUCKET_HOURS = 24
 # ``-1`` is a valid bucket for an event occurring during the 24 hours before
 # admission, so missing timestamps need an out-of-band sentinel.
 MISSING_TIME_BUCKET = -(2**31)
@@ -241,8 +243,20 @@ def _aggregate_medicines(frame: pd.DataFrame, admission: dict[str, pd.Timestamp]
         )
     ]
     frame["numeric"] = frame.total_quantity.map(_finite_number)
+    # Do not collapse a medication's longitudinal administration/prescription
+    # pattern across an entire admission.  A 24-hour bucket preserves the
+    # within-visit trajectory while bounding graph growth. Missing timestamps
+    # remain in their own bucket instead of being mixed with known-time events.
+    relative_hours = (frame["prescribed_time"] - frame["visit_id"].map(admission)).dt.total_seconds() / 3600.0
+    frame["time_hours"] = relative_hours
+    frame["time_bucket"] = [
+        math.floor(hours / MEDICATION_TIME_BUCKET_HOURS) if math.isfinite(hours) else MISSING_TIME_BUCKET
+        for hours in relative_hours
+    ]
     rows: list[tuple[str, Event]] = []
-    for (visit_id, token), group in frame.groupby(["visit_id", "token"], sort=False):
+    for (visit_id, token, _time_bucket), group in frame.groupby(
+        ["visit_id", "token", "time_bucket"], sort=False, dropna=False,
+    ):
         timestamp = group.prescribed_time.min()
         start = admission.get(visit_id, pd.NaT)
         hours = math.nan if pd.isna(timestamp) or pd.isna(start) else float((timestamp - start).total_seconds() / 3600.0)
@@ -308,6 +322,7 @@ def _build_graph(visit_id: str, split: str, events: Sequence[Event]) -> GraphExa
     edges: list[tuple[int, int, int]] = []
     procedure_by_order: dict[str, list[int]] = {}
     observations_by_token: dict[str, list[int]] = {}
+    medicines_by_token: dict[str, list[int]] = {}
     for event in events:
         index = len(node_types)
         node_types.append(TYPE_TO_ID[event.node_type])
@@ -323,6 +338,8 @@ def _build_graph(visit_id: str, split: str, events: Sequence[Event]) -> GraphExa
             procedure_by_order.setdefault(event.order_key, []).append(index)
         if event.node_type == "OBSERVATION":
             observations_by_token.setdefault(event.token, []).append(index)
+        if event.node_type == "MEDICINE":
+            medicines_by_token.setdefault(event.token, []).append(index)
     for index, node_type in enumerate(node_types):
         if node_type != TYPE_TO_ID["OBSERVATION"]:
             continue
@@ -339,6 +356,14 @@ def _build_graph(visit_id: str, split: str, events: Sequence[Event]) -> GraphExa
         for source, target in zip(ordered, ordered[1:]):
             edges.append((source, target, RELATION_TO_ID["next_same_test"]))
             edges.append((target, source, RELATION_TO_ID["prev_same_test"]))
+    for indices in medicines_by_token.values():
+        ordered = sorted(
+            (index for index in indices if math.isfinite(time_hours[index])),
+            key=lambda index: time_hours[index],
+        )
+        for source, target in zip(ordered, ordered[1:]):
+            edges.append((source, target, RELATION_TO_ID["next_same_medication"]))
+            edges.append((target, source, RELATION_TO_ID["prev_same_medication"]))
     return GraphExample(
         visit_id=visit_id,
         split=split,
@@ -431,6 +456,14 @@ def load_structured_dataset(data_root: Path, *, seed: int = 20260812, limit_visi
         "selected_tables": ["visits", "diagnoses", "medicines", "procedures", "observations"],
         "excluded_tables": ["clinical_notes", "visit_ehr", "graph_nodes", "graph_edges"],
         "diagnosis_policy": "controlled_code_only_no_description_fallback",
+        "temporal_aggregation": {
+            "medicines": {"relative_time_bucket_hours": MEDICATION_TIME_BUCKET_HOURS},
+            "observations": "order_id_and_event_token",
+        },
+        "temporal_relations": [
+            "next_same_test", "prev_same_test",
+            "next_same_medication", "prev_same_medication",
+        ],
         "raw_text_persisted": False,
         "graph_count": len(examples),
         "split_counts": {split: sum(example.split == split for example in examples) for split in ("train", "validation", "test")},

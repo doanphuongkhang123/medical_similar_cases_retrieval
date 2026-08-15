@@ -25,7 +25,9 @@ from train visits only.
 
 Each visit is a sparse graph with VISIT, DIAGNOSIS, MEDICINE, PROCEDURE, and
 OBSERVATION nodes. Edges are bidirectional visit-event relations, verified
-procedure-observation order links, and same-test temporal links.
+procedure-observation order links, same-test temporal links, and same-medicine
+temporal links. Medicine events are aggregated only within a relative 24-hour
+bucket; repeated buckets of the same medicine remain distinct nodes.
 
 1. Stage 1: per-type GT-BEHRT-style NAM plus Huber reconstruction of only
    intentionally masked Observation values.

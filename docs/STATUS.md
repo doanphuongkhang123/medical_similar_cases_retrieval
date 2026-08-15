@@ -237,6 +237,10 @@ hoặc đưa vào Git.
 - Queue thống kê VICReg detached/FP32 cho variance-covariance đã được chuẩn bị
   ở local như ablation kế tiếp; similarity và MI vẫn chỉ dùng current group.
   Queue không được ghi checkpoint hay export artifact.
+- Ngày 2026-08-15, aggregation thuốc được sửa từ gộp cả lượt khám sang gộp
+  theo bucket 24 giờ. Các bucket của cùng thuốc được nối cạnh thời gian; run
+  Stage 1/2/3 trước thay đổi này không tương thích làm predecessor và chỉ còn
+  giá trị đối chiếu.
 
 ### Blocker hiện tại
 
