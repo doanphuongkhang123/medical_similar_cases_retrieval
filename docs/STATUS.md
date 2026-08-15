@@ -213,3 +213,37 @@ hoặc đưa vào Git.
   executable đã xác minh của `scr_env`, không đổi sang environment khác.
 - Chưa chạy pipeline trên dữ liệu thật và chưa tạo retrieval artifact; blocker
   là rubric relevance được phê duyệt cùng split patient-disjoint.
+
+## 11. Retrieval-first EHR-only SSL (2026-08-15)
+
+- Source mới nằm tại `code/retrieval_first_ssl_20260814/`; đây là workspace
+  tách riêng cho retrieval-first pretraining, không thay thế baseline
+  `code/ehr_graph_pipeline/`.
+- Đã clone các repository công khai vào workspace server `third_party/` để
+  tham chiếu: InfEHR (Apache-2.0) và AID-MAE (MIT) được adapt ý tưởng; GT-BEHRT
+  và GCVR chỉ tham chiếu vì upstream không có license. MUSE được hoãn cho đến
+  giai đoạn clinical-note và không chạy Neptune/official-run mode.
+- Loader chỉ dùng structured D/M/P/Observation từ năm Parquet đã duyệt; không
+  đọc clinical note, `visit_ehr`, graph text, PDF hay image. Diagnosis không
+  có controlled code bị loại ở v1, không hash description tự do.
+- Stage 1/2 có checkpoint lineage nghiêm ngặt. Stage 3 hiện dùng encoder
+  readout cho VICReg và retrieval (projector không được export), MI corruption
+  trước encoder cùng type/cửa sổ 24 giờ chính xác, và quality gate chỉ trên
+  validation split.
+- Run đầy đủ 1 epoch với B=8, 1.200 node cap, AMP đã exit 0; xem
+  `docs/EXPERIMENTS.md`. Cross-view proxy tốt hơn shuffled null nhưng overall
+  engineering gate chưa đạt (effective rank và graph-size correlation), nên
+  **chưa có FAISS index hoặc pre-review candidate pool**.
+- Queue thống kê VICReg detached/FP32 cho variance-covariance đã được chuẩn bị
+  ở local như ablation kế tiếp; similarity và MI vẫn chỉ dùng current group.
+  Queue không được ghi checkpoint hay export artifact.
+
+### Blocker hiện tại
+
+- Ngày 2026-08-15, `/mnt/disk4` trên Vaipe đầy 100% (khoảng 4 KiB trống). Một
+  retry 3 epoch kết thúc đột ngột trước khi có artifact hợp lệ; lần sync source
+  sau đó cũng bị dừng giữa chừng. Không chạy thêm hay khôi phục source
+  trên server cho đến khi có dung lượng an toàn; source hoàn chỉnh vẫn ở local.
+- Không xóa data/output/process của người dùng khác. Khi disk có chỗ trống,
+  cần đồng bộ lại workspace từ local, checksum, chạy test fixture, rồi mới
+  chạy ablation `--vicreg-history-size 24 --vicreg-max-stat-vectors 32`.

@@ -1,0 +1,144 @@
+{"kind":"slide","id":"sl/ms3cvd","slide":1,"title":"PAPER REVIEW · MIMIC-IV","textShapes":3}
+{"kind":"textbox","id":"sh/ulonu9cv","slide":1,"textChars":23,"textLines":1}
+{"kind":"textbox","id":"sh/hoz65ob6","slide":1,"textChars":28,"textLines":2}
+{"kind":"textbox","id":"sh/gnqpwja1","slide":1,"textChars":87,"textLines":2}
+{"kind":"shape","id":"sh/3qho7etc","slide":1,"bbox":[1115,42,124,12]}
+{"kind":"shape","id":"sh/2p87ytsr","slide":1,"bbox":[1115,61,124,12]}
+{"kind":"notes","id":"nt/ms3cvd","slide":1,"text":"[Sources] | - https://proceedings.iclr.cc/paper_files/paper/2024/file/a71c193..."}
+{"kind":"slide","id":"sl/tvaobj","slide":2,"title":"Cùng mã EHR, hai cấu trúc đồ thị khác nhau","textShapes":8}
+{"kind":"textbox","id":"sh/sbihgfah","slide":2,"textChars":42,"textLines":1}
+{"kind":"textbox","id":"sh/7a90natw","slide":2,"textChars":32,"textLines":1}
+{"kind":"textbox","id":"sh/690ze5sb","slide":2,"textChars":2,"textLines":1}
+{"kind":"textbox","id":"sh/5oril0bq","slide":2,"textChars":76,"textLines":1}
+{"kind":"shape","id":"sh/knihcva5","slide":2,"bbox":[640,197,0,378]}
+{"kind":"textbox","id":"sh/jmp0jqtk","slide":2,"textChars":32,"textLines":1}
+{"kind":"textbox","id":"sh/ilgza5sz","slide":2,"textChars":176,"textLines":4}
+{"kind":"textbox","id":"sh/p4bix4bu","slide":2,"textChars":35,"textLines":1}
+{"kind":"textbox","id":"sh/oj21ozap","slide":2,"textChars":188,"textLines":4}
+{"kind":"notes","id":"nt/tvaobj","slide":2,"text":"[Sources] | - https://proceedings.iclr.cc/paper_files/paper/2024/file/a71c193..."}
+{"kind":"slide","id":"sl/q3dq06","slide":3,"title":"Hai paper khác cửa sổ quan sát và mục tiêu","textShapes":7}
+{"kind":"textbox","id":"sh/hkzehof2","slide":3,"textChars":42,"textLines":1}
+{"kind":"textbox","id":"sh/uh8v69gb","slide":3,"textChars":59,"textLines":1}
+{"kind":"textbox","id":"sh/vihwfexw","slide":3,"textChars":2,"textLines":1}
+{"kind":"shape","id":"sh/8f6d4jyl","slide":3,"bbox":[640,137,0,473]}
+{"kind":"textbox","id":"sh/tgfed4fq","slide":3,"textChars":21,"textLines":1}
+{"kind":"textbox","id":"sh/6dov29gf","slide":3,"textChars":245,"textLines":10}
+{"kind":"textbox","id":"sh/7exwbex0","slide":3,"textChars":21,"textLines":1}
+{"kind":"textbox","id":"sh/kr6dgzy9","slide":3,"textChars":270,"textLines":9}
+{"kind":"notes","id":"nt/q3dq06","slide":3,"text":"[Sources] | - https://proceedings.iclr.cc/paper_files/paper/2024/file/a71c193..."}
+{"kind":"slide","id":"sl/ll5pa6","slide":4,"title":"GT-BEHRT chỉ nhìn lịch sử trước ICU","textShapes":12}
+{"kind":"textbox","id":"sh/032tkbat","slide":4,"textChars":35,"textLines":1}
+{"kind":"textbox","id":"sh/z29cr698","slide":4,"textChars":49,"textLines":1}
+{"kind":"textbox","id":"sh/y10bi1sn","slide":4,"textChars":2,"textLines":1}
+{"kind":"shape","id":"sh/9sbuxgra","slide":4,"bbox":[640,168,0,410]}
+{"kind":"shape","id":"sh/8r2tobap","slide":4,"bbox":[41,373,1198,0]}
+{"kind":"textbox","id":"sh/nqtcv694","slide":4,"textChars":16,"textLines":1}
+{"kind":"textbox","id":"sh/mpkbm1sj","slide":4,"textChars":67,"textLines":1}
+{"kind":"textbox","id":"sh/xwvu10r6","slide":4,"textChars":16,"textLines":1}
+{"kind":"textbox","id":"sh/wvmdsval","slide":4,"textChars":62,"textLines":1}
+{"kind":"textbox","id":"sh/61kf6tcz","slide":4,"textChars":18,"textLines":1}
+{"kind":"textbox","id":"sh/72tgzydk","slide":4,"textChars":63,"textLines":1}
+{"kind":"textbox","id":"sh/832x83up","slide":4,"textChars":16,"textLines":1}
+{"kind":"textbox","id":"sh/t4by18va","slide":4,"textChars":63,"textLines":1}
+{"kind":"textbox","id":"sh/u54fadcv","slide":4,"textChars":123,"textLines":1}
+{"kind":"notes","id":"nt/ll5pa6","slide":4,"text":"[Sources] | - https://proceedings.iclr.cc/paper_files/paper/2024/file/a71c193..."}
+{"kind":"slide","id":"sl/03sc0u","slide":5,"title":"GT-BEHRT: mỗi visit là complete typed graph","textShapes":14}
+{"kind":"textbox","id":"sh/ydsjqlgf","slide":5,"textChars":43,"textLines":1}
+{"kind":"textbox","id":"sh/l0j2lgf6","slide":5,"textChars":30,"textLines":1}
+{"kind":"textbox","id":"sh/kfa1svyl","slide":5,"textChars":2,"textLines":1}
+{"kind":"textbox","id":"sh/721knqxw","slide":5,"textChars":4,"textLines":1}
+{"kind":"textbox","id":"sh/m1sjulgr","slide":5,"textChars":125,"textLines":3}
+{"kind":"textbox","id":"sh/9432p0f2","slide":5,"textChars":4,"textLines":1}
+{"kind":"textbox","id":"sh/83a1wvyh","slide":5,"textChars":185,"textLines":4}
+{"kind":"shape","id":"sh/v6lkrax8","slide":5,"bbox":[725,245,320,5]}
+{"kind":"shape","id":"sh/u5cjy5gn","slide":5,"bbox":[715,245,10,265]}
+{"kind":"shape","id":"sh/o3ydw3el","slide":5,"bbox":[725,245,335,260]}
+{"kind":"shape","id":"sh/p47ep8f6","slide":5,"bbox":[715,250,330,260]}
+{"kind":"shape","id":"sh/21gvudwf","slide":5,"bbox":[1045,250,15,255]}
+{"kind":"shape","id":"sh/32pwnyx0","slide":5,"bbox":[715,505,345,5]}
+{"kind":"shape","id":"sh/crix0neh","slide":5,"bbox":[725,245,160,125]}
+{"kind":"shape","id":"sh/dsretsv2","slide":5,"bbox":[885,250,160,120]}
+{"kind":"shape","id":"sh/q5gfydwb","slide":5,"bbox":[715,370,170,140]}
+{"kind":"shape","id":"sh/bqpwrixw","slide":5,"bbox":[885,370,175,135]}
+{"kind":"textbox","id":"sh/0vix4net","slide":5,"textChars":3,"textLines":1}
+{"kind":"textbox","id":"sh/lwrexsvy","slide":5,"textChars":2,"textLines":1}
+{"kind":"textbox","id":"sh/9cnehsni","slide":5,"textChars":2,"textLines":1}
+{"kind":"textbox","id":"sh/8bed8n6x","slide":5,"textChars":2,"textLines":1}
+{"kind":"textbox","id":"sh/7q5wfi5c","slide":5,"textChars":2,"textLines":1}
+{"kind":"textbox","id":"sh/mpwv6dor","slide":5,"textChars":34,"textLines":1}
+{"kind":"textbox","id":"sh/hg7elcne","slide":5,"textChars":25,"textLines":1}
+{"kind":"notes","id":"nt/03sc0u","slide":5,"text":"[Sources] | - https://proceedings.iclr.cc/paper_files/paper/2024/file/a71c193..."}
+{"kind":"slide","id":"sl/94hiq9","slide":6,"title":"GT-BEHRT: bốn bước thu graph embedding g_t","textShapes":11}
+{"kind":"textbox","id":"sh/6dor658z","slide":6,"textChars":42,"textLines":1}
+{"kind":"textbox","id":"sh/tgzah07q","slide":6,"textChars":33,"textLines":1}
+{"kind":"textbox","id":"sh/sfq98f65","slide":6,"textChars":2,"textLines":1}
+{"kind":"shape","id":"sh/f2hsjapg","slide":6,"bbox":[640,165,0,430]}
+{"kind":"shape","id":"sh/uh8ra5ov","slide":6,"bbox":[41,380,1198,0]}
+{"kind":"textbox","id":"sh/h4zalk7m","slide":6,"textChars":21,"textLines":1}
+{"kind":"textbox","id":"sh/g3qtcf61","slide":6,"textChars":114,"textLines":1}
+{"kind":"textbox","id":"sh/361snups","slide":6,"textChars":30,"textLines":1}
+{"kind":"textbox","id":"sh/258bepo7","slide":6,"textChars":107,"textLines":1}
+{"kind":"textbox","id":"sh/076pc7ad","slide":6,"textChars":27,"textLines":1}
+{"kind":"textbox","id":"sh/18f65cbi","slide":6,"textChars":116,"textLines":1}
+{"kind":"textbox","id":"sh/e5o7ahs7","slide":6,"textChars":17,"textLines":1}
+{"kind":"textbox","id":"sh/z6xo32ts","slide":6,"textChars":115,"textLines":1}
+{"kind":"notes","id":"nt/94hiq9","slide":6,"text":"[Sources] | - https://proceedings.iclr.cc/paper_files/paper/2024/file/a71c193..."}
+{"kind":"slide","id":"sl/eplc1n","slide":7,"title":"GT-BEHRT: từ g_t đến patient embedding","textShapes":10}
+{"kind":"textbox","id":"sh/b69s7i9o","slide":7,"textChars":38,"textLines":1}
+{"kind":"textbox","id":"sh/c7it0nq9","slide":7,"textChars":30,"textLines":1}
+{"kind":"textbox","id":"sh/d8ru9sru","slide":7,"textChars":2,"textLines":1}
+{"kind":"textbox","id":"sh/yt0b2d8f","slide":7,"textChars":21,"textLines":1}
+{"kind":"textbox","id":"sh/zu9cbi90","slide":7,"textChars":58,"textLines":1}
+{"kind":"textbox","id":"sh/0vit4nql","slide":7,"textChars":16,"textLines":1}
+{"kind":"textbox","id":"sh/lwrudsr6","slide":7,"textChars":72,"textLines":1}
+{"kind":"textbox","id":"sh/mxkb6x8r","slide":7,"textChars":18,"textLines":1}
+{"kind":"textbox","id":"sh/nytcf29w","slide":7,"textChars":111,"textLines":1}
+{"kind":"shape","id":"sh/3m5s7m9w","slide":7,"bbox":[586,150,653,445]}
+{"kind":"textbox","id":"sh/5ona9wr2","slide":7,"textChars":30,"textLines":1}
+{"kind":"image","id":"im/ls3adwji","slide":7,"name":"","alt":"Figure 1 from GT-BEHRT showing graph visit embeddings and patient Transformer","bbox":[600,192,625,330]}
+{"kind":"notes","id":"nt/eplc1n","slide":7,"text":"[Sources] | - https://proceedings.iclr.cc/paper_files/paper/2024/file/a71c193..."}
+{"kind":"slide","id":"sl/f36wkd","slide":8,"title":"GT-BEHRT: pre-train node → graph → temporal","textShapes":8}
+{"kind":"textbox","id":"sh/32l0jytc","slide":8,"textChars":43,"textLines":1}
+{"kind":"textbox","id":"sh/o3u1s3ux","slide":8,"textChars":30,"textLines":1}
+{"kind":"textbox","id":"sh/p43ilobi","slide":8,"textChars":2,"textLines":1}
+{"kind":"shape","id":"sh/q5cjutc3","slide":8,"bbox":[41,151,660,438]}
+{"kind":"textbox","id":"sh/c7e1w3ut","slide":8,"textChars":33,"textLines":1}
+{"kind":"textbox","id":"sh/dsnip8be","slide":8,"textChars":13,"textLines":1}
+{"kind":"textbox","id":"sh/69szi9cj","slide":8,"textChars":135,"textLines":1}
+{"kind":"textbox","id":"sh/ra10bed4","slide":8,"textChars":19,"textLines":1}
+{"kind":"textbox","id":"sh/r610jelc","slide":8,"textChars":170,"textLines":3}
+{"kind":"image","id":"im/u54bepon","slide":8,"name":"","alt":"Figure 4 from GT-BEHRT showing two-stage pre-training","bbox":[54,185,635,340]}
+{"kind":"notes","id":"nt/f36wkd","slide":8,"text":"[Sources] | - https://proceedings.iclr.cc/paper_files/paper/2024/file/a71c193..."}
+{"kind":"slide","id":"sl/lipsqc","slide":9,"title":"HypeMed: MIMIC-IV v2.0 cho gợi ý thuốc","textShapes":12}
+{"kind":"textbox","id":"sh/43ax4z2d","slide":9,"textChars":38,"textLines":1}
+{"kind":"textbox","id":"sh/j21gvuls","slide":9,"textChars":39,"textLines":1}
+{"kind":"textbox","id":"sh/i1sf2pk7","slide":9,"textChars":2,"textLines":1}
+{"kind":"shape","id":"sh/ts3y143u","slide":9,"bbox":[640,160,0,410]}
+{"kind":"shape","id":"sh/sruh8j29","slide":9,"bbox":[41,365,1198,0]}
+{"kind":"textbox","id":"sh/r61gzelo","slide":9,"textChars":14,"textLines":1}
+{"kind":"textbox","id":"sh/65sf69k3","slide":9,"textChars":49,"textLines":1}
+{"kind":"textbox","id":"sh/9wzypk3q","slide":9,"textChars":13,"textLines":1}
+{"kind":"textbox","id":"sh/8vqxwf25","slide":9,"textChars":37,"textLines":1}
+{"kind":"textbox","id":"sh/adk3i9s7","slide":9,"textChars":25,"textLines":1}
+{"kind":"textbox","id":"sh/bedkbetc","slide":9,"textChars":61,"textLines":1}
+{"kind":"textbox","id":"sh/wfmlkjax","slide":9,"textChars":26,"textLines":1}
+{"kind":"textbox","id":"sh/xgv2dobi","slide":9,"textChars":48,"textLines":1}
+{"kind":"textbox","id":"sh/yh43mts3","slide":9,"textChars":162,"textLines":1}
+{"kind":"notes","id":"nt/lipsqc","slide":9,"text":"[Sources] | - https://arxiv.org/pdf/2603.18459 (§3.1, pp. 4-5; §5.1.1 and Tab..."}
+{"kind":"slide","id":"sl/a9qdmi","slide":10,"title":"HypeMed: medical entity là đỉnh, visit là hyperedge","textShapes":31}
+{"kind":"textbox","id":"sh/dkjq1cva","slide":10,"textChars":51,"textLines":1}
+{"kind":"textbox","id":"sh/qhsrqxcz","slide":10,"textChars":32,"textLines":1}
+{"kind":"textbox","id":"sh/bi18z2dk","slide":10,"textChars":2,"textLines":1}
+{"kind":"textbox","id":"sh/ofq94nut","slide":10,"textChars":21,"textLines":1}
+{"kind":"textbox","id":"sh/pgzqxsve","slide":10,"textChars":42,"textLines":1}
+{"kind":"textbox","id":"sh/2d8r2xcn","slide":10,"textChars":7,"textLines":1}
+{"kind":"textbox","id":"sh/3eh8v2d8","slide":10,"textChars":92,"textLines":1}
+{"kind":"textbox","id":"sh/8bu90rux","slide":10,"textChars":12,"textLines":1}
+{"kind":"textbox","id":"sh/9c3a9wvi","slide":10,"textChars":155,"textLines":1}
+{"kind":"textbox","id":"sh/50zm147u","slide":10,"textChars":28,"textLines":1}
+{"kind":"textbox","id":"sh/kzq5szq9","slide":10,"textChars":2,"textLines":1}
+{"kind":"shape","id":"sh/jyh4zupo","slide":10,"bbox":[588,215,190,200]}
+{"kind":"shape","id":"sh/ix8nqp83","slide":10,"bbox":[635,345,150,205]}
+{"kind":"textbox","id":"sh/xwzmxk7i","slide":10,"textChars":7,"textLines":1}
+{"kind":"textbox","id":"sh/wv65ozqd","slide":10,"textChars":7,"textLines":1}
+{"kind":"notice","message":"Truncated: omitted 135 lines. Increase maxChars or narrow target."}

@@ -1,0 +1,28 @@
+Communication job: By the end, a technical research audience should be able to reconstruct exactly how GT-BEHRT and HypeMed turn MIMIC-IV codes into graph/visit/patient embeddings, and distinguish paper-stated facts from implementation assumptions.
+
+Narrative arc:
+1. Scope and shared MIMIC-IV input vocabulary.
+2. GT-BEHRT: cohort -> visit graph -> graph embedding -> patient embedding -> pre-training.
+3. HypeMed: processed visit data -> three domain hypergraphs -> KHGE -> contrastive embeddings -> similar-visit retrieval.
+4. Direct comparison, implementation gaps, and implications for SimilarCasesRetrieval.
+
+Slides:
+01 Title.
+02 Questions answered and key distinction.
+03 MIMIC-IV input side-by-side.
+04 GT-BEHRT cohort and preprocessing boundary.
+05 GT-BEHRT graph: nodes, edges, virtual node.
+06 GT-BEHRT graph embedding steps.
+07 GT-BEHRT visit-to-patient embedding sequence.
+08 GT-BEHRT two-stage pre-training.
+09 HypeMed MIMIC-IV cohort and processed statistics.
+10 HypeMed hypergraph: three domains, nodes, hyperedges, incidences.
+11 HypeMed KHGE encoder steps.
+12 HypeMed contrastive pre-training and exported embeddings.
+13 HypeMed SimMR retrieval and final visit representation.
+14 Graph semantics and embedding outputs compared.
+15 What transfers to similar-case retrieval.
+16 Paper-stated gaps and implementation risks.
+17 Practical blueprint for this project.
+
+Visual system: Codex Grid, white background, black type, light gray structural panels. Blue accents represent GT-BEHRT; orange/green accents represent HypeMed. Use exact Codex Grid silhouettes as composition references; use source-paper figures only when they materially clarify architecture.

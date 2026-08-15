@@ -1,0 +1,859 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/ff19vs",
+    "id": "ff19vs",
+    "slide": 15,
+    "layoutId": "e33a611d-2dd3-4bdb-a7d9-d54c35e77ae5",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "69026c0d-76c3-4c2d-8087-5d8be83fe3f8",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "bg1": "#FFFFFF",
+      "bg2": "#000000",
+      "tx1": "#1F1F1F",
+      "tx2": "#FFFFFF",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "typefaces": [
+      "Helvetica Neue"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "e33a611d-2dd3-4bdb-a7d9-d54c35e77ae5",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "69026c0d-76c3-4c2d-8087-5d8be83fe3f8",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "69026c0d-76c3-4c2d-8087-5d8be83fe3f8",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/d07a5c32",
+      "id": "1",
+      "name": "slide-title",
+      "bbox": [
+        41,
+        32,
+        1198,
+        82
+      ],
+      "geometry": "rect",
+      "text": "Retrieval: index HypeMed + context GT-BEHRT",
+      "textPreview": "Retrieval: index HypeMed + context GT-BEHRT",
+      "resolvedFontSize": 47,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 47,
+        "typeface": "Helvetica Neue",
+        "color": "#111111",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Retrieval: index HypeMed + context GT-BEHRT"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Retrieval: index HypeMed + context GT-BEHRT",
+          "resolvedTextStyle": {
+            "fontSize": 47,
+            "typeface": "Helvetica Neue",
+            "color": "#111111",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Retrieval: index HypeMed + context GT-BEHRT",
+              "fontSize": 47,
+              "typeface": "Helvetica Neue",
+              "color": "#111111",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/qxwruxkb",
+      "id": "2",
+      "name": "visible-source",
+      "bbox": [
+        41,
+        650,
+        1030,
+        24
+      ],
+      "geometry": "rect",
+      "text": "Suy luận thiết kế dựa trên hai paper và phạm vi SimilarCasesRetrieval",
+      "textPreview": "Suy luận thiết kế dựa trên hai paper và phạm vi SimilarCasesRetrieval",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 12,
+        "typeface": "Helvetica Neue",
+        "color": "#5B616B",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "autoFit": "none",
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Suy luận thiết kế dựa trên hai paper và phạm vi SimilarCasesRetrieval"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Suy luận thiết kế dựa trên hai paper và phạm vi SimilarCasesRetrieval",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "typeface": "Helvetica Neue",
+            "color": "#5B616B",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Suy luận thiết kế dựa trên hai paper và phạm vi SimilarCasesRetrieval",
+              "fontSize": 12,
+              "typeface": "Helvetica Neue",
+              "color": "#5B616B",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/ry5s32lw",
+      "id": "3",
+      "name": "slide-number",
+      "bbox": [
+        1184,
+        653,
+        55,
+        28
+      ],
+      "geometry": "rect",
+      "text": "15",
+      "textPreview": "15",
+      "resolvedFontSize": 13,
+      "resolvedTextStyle": {
+        "anchor": 3,
+        "fontSize": 13,
+        "typeface": "Helvetica Neue",
+        "color": "#111111",
+        "alignment": "right",
+        "verticalAlignment": "bottom",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "15"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "15",
+          "resolvedTextStyle": {
+            "fontSize": 13,
+            "typeface": "Helvetica Neue",
+            "color": "#111111",
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "15",
+              "fontSize": 13,
+              "typeface": "Helvetica Neue",
+              "color": "#111111",
+              "alignment": "right"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/0ny90r2d",
+      "id": "4",
+      "bbox": [
+        640,
+        165,
+        0,
+        430
+      ],
+      "geometry": "straightConnector1",
+      "lineColor": "#D8DADF",
+      "lineWidth": 1
+    },
+    {
+      "order": 5,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/1o7a9w3y",
+      "id": "5",
+      "bbox": [
+        41,
+        380,
+        1198,
+        0
+      ],
+      "geometry": "straightConnector1",
+      "lineColor": "#D8DADF",
+      "lineWidth": 1
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/e1gryhkn",
+      "id": "6",
+      "bbox": [
+        41,
+        165,
+        560,
+        42
+      ],
+      "geometry": "rect",
+      "text": "Đơn vị retrieval",
+      "textPreview": "Đơn vị retrieval",
+      "resolvedFontSize": 27,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 27,
+        "typeface": "Helvetica Neue",
+        "color": "#D97841",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Đơn vị retrieval"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Đơn vị retrieval",
+          "resolvedTextStyle": {
+            "fontSize": 27,
+            "typeface": "Helvetica Neue",
+            "color": "#D97841",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Đơn vị retrieval",
+              "fontSize": 27,
+              "typeface": "Helvetica Neue",
+              "color": "#D97841",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/zmps7ml8",
+      "id": "7",
+      "bbox": [
+        41,
+        217,
+        560,
+        145
+      ],
+      "geometry": "rect",
+      "text": "Dùng hadm_id/visit embedding làm index. HypeMed Uᴴ là mẫu trực tiếp cho visit-level nearest-neighbor retrieval.",
+      "textPreview": "Dùng hadm_id/visit embedding làm index. HypeMed Uᴴ là mẫu trực tiếp cho visit-level nearest-neighbor retrieval.",
+      "resolvedFontSize": 21,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 21,
+        "typeface": "Helvetica Neue",
+        "color": "#111111",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Dùng hadm_id/visit embedding làm index. HypeMed Uᴴ là"
+          },
+          {
+            "index": 2,
+            "text": "mẫu trực tiếp cho visit-level nearest-neighbor retrieval."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Dùng hadm_id/visit embedding làm index. HypeMed Uᴴ là mẫu trực tiếp cho visit-level nearest-neighbor retrieval.",
+          "resolvedTextStyle": {
+            "fontSize": 21,
+            "typeface": "Helvetica Neue",
+            "color": "#111111",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Dùng hadm_id/visit embedding làm index. HypeMed Uᴴ là mẫu trực tiếp cho visit-level nearest-neighbor retrieval.",
+              "fontSize": 21,
+              "typeface": "Helvetica Neue",
+              "color": "#111111",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/gru9on29",
+      "id": "8",
+      "bbox": [
+        679,
+        165,
+        560,
+        42
+      ],
+      "geometry": "rect",
+      "text": "Input leakage-safe",
+      "textPreview": "Input leakage-safe",
+      "resolvedFontSize": 27,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 27,
+        "typeface": "Helvetica Neue",
+        "color": "#4078C0",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Input leakage-safe"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Input leakage-safe",
+          "resolvedTextStyle": {
+            "fontSize": 27,
+            "typeface": "Helvetica Neue",
+            "color": "#4078C0",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Input leakage-safe",
+              "fontSize": 27,
+              "typeface": "Helvetica Neue",
+              "color": "#4078C0",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/hsnaxs3u",
+      "id": "9",
+      "bbox": [
+        679,
+        217,
+        560,
+        145
+      ],
+      "geometry": "rect",
+      "text": "Giữ nguyên nguyên tắc GT-BEHRT: chỉ dùng dữ liệu trước query time. Diagnosis/outcome tương lai chỉ để đánh giá.",
+      "textPreview": "Giữ nguyên nguyên tắc GT-BEHRT: chỉ dùng dữ liệu trước query time. Diagnosis/outcome tương lai chỉ để đánh giá.",
+      "resolvedFontSize": 21,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 21,
+        "typeface": "Helvetica Neue",
+        "color": "#111111",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Giữ nguyên nguyên tắc GT-BEHRT: chỉ dùng dữ liệu trước"
+          },
+          {
+            "index": 2,
+            "text": "query time. Diagnosis/outcome tương lai chỉ để đánh giá."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Giữ nguyên nguyên tắc GT-BEHRT: chỉ dùng dữ liệu trước query time. Diagnosis/outcome tương lai chỉ để đánh giá.",
+          "resolvedTextStyle": {
+            "fontSize": 21,
+            "typeface": "Helvetica Neue",
+            "color": "#111111",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Giữ nguyên nguyên tắc GT-BEHRT: chỉ dùng dữ liệu trước query time. Diagnosis/outcome tương lai chỉ để đánh giá.",
+              "fontSize": 21,
+              "typeface": "Helvetica Neue",
+              "color": "#111111",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 10,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/94nq187i",
+      "id": "10",
+      "bbox": [
+        41,
+        398,
+        560,
+        42
+      ],
+      "geometry": "rect",
+      "text": "Context nên bổ sung",
+      "textPreview": "Context nên bổ sung",
+      "resolvedFontSize": 27,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 27,
+        "typeface": "Helvetica Neue",
+        "color": "#4078C0",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Context nên bổ sung"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Context nên bổ sung",
+          "resolvedTextStyle": {
+            "fontSize": 27,
+            "typeface": "Helvetica Neue",
+            "color": "#4078C0",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Context nên bổ sung",
+              "fontSize": 27,
+              "typeface": "Helvetica Neue",
+              "color": "#4078C0",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 11,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/83eps3qx",
+      "id": "11",
+      "bbox": [
+        41,
+        450,
+        560,
+        145
+      ],
+      "geometry": "rect",
+      "text": "Kết hợp graph/hypergraph representation với age, visit type, time-of-year và relative visit position nếu hợp lệ.",
+      "textPreview": "Kết hợp graph/hypergraph representation với age, visit type, time-of-year và relative visit position nếu hợp lệ.",
+      "resolvedFontSize": 21,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 21,
+        "typeface": "Helvetica Neue",
+        "color": "#111111",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Kết hợp graph/hypergraph representation với age, visit"
+          },
+          {
+            "index": 2,
+            "text": "type, time-of-year và relative visit position nếu hợp lệ."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Kết hợp graph/hypergraph representation với age, visit type, time-of-year và relative visit position nếu hợp lệ.",
+          "resolvedTextStyle": {
+            "fontSize": 21,
+            "typeface": "Helvetica Neue",
+            "color": "#111111",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Kết hợp graph/hypergraph representation với age, visit type, time-of-year và relative visit position nếu hợp lệ.",
+              "fontSize": 21,
+              "typeface": "Helvetica Neue",
+              "color": "#111111",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 12,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/7258zypc",
+      "id": "12",
+      "bbox": [
+        679,
+        398,
+        560,
+        42
+      ],
+      "geometry": "rect",
+      "text": "Metric space phải được học",
+      "textPreview": "Metric space phải được học",
+      "resolvedFontSize": 27,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 27,
+        "typeface": "Helvetica Neue",
+        "color": "#D97841",
+        "bold": true,
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Metric space phải được học"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Metric space phải được học",
+          "resolvedTextStyle": {
+            "fontSize": 27,
+            "typeface": "Helvetica Neue",
+            "color": "#D97841",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Metric space phải được học",
+              "fontSize": 27,
+              "typeface": "Helvetica Neue",
+              "color": "#D97841",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 13,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/mhc7qt8r",
+      "id": "13",
+      "bbox": [
+        679,
+        450,
+        560,
+        145
+      ],
+      "geometry": "rect",
+      "text": "Contrastive pre-training ở node + visit level giúp embedding phục vụ retrieval, thay vì dùng graph encoder chưa huấn luyện.",
+      "textPreview": "Contrastive pre-training ở node + visit level giúp embedding phục vụ retrieval, thay vì dùng graph encoder chưa huấn luyện.",
+      "resolvedFontSize": 21,
+      "resolvedTextStyle": {
+        "anchor": 1,
+        "fontSize": 21,
+        "typeface": "Helvetica Neue",
+        "color": "#111111",
+        "alignment": "left",
+        "verticalAlignment": "top",
+        "autoFit": "shrinkText",
+        "autoFitScale": 1,
+        "insets": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        }
+      },
+      "textLayout": {
+        "lineCount": 3,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Contrastive pre-training ở node + visit level giúp"
+          },
+          {
+            "index": 2,
+            "text": "embedding phục vụ retrieval, thay vì dùng graph encoder"
+          },
+          {
+            "index": 3,
+            "text": "chưa huấn luyện."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Contrastive pre-training ở node + visit level giúp embedding phục vụ retrieval, thay vì dùng graph encoder chưa huấn luyện.",
+          "resolvedTextStyle": {
+            "fontSize": 21,
+            "typeface": "Helvetica Neue",
+            "color": "#111111",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Contrastive pre-training ở node + visit level giúp embedding phục vụ retrieval, thay vì dùng graph encoder chưa huấn luyện.",
+              "fontSize": 21,
+              "typeface": "Helvetica Neue",
+              "color": "#111111",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}
