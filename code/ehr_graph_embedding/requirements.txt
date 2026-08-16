@@ -1,0 +1,6 @@
+# Already available in the approved scr_env on vaipe at implementation time.
+numpy>=2.0
+pandas>=3.0
+pyarrow>=25.0
+torch>=2.4
+openpyxl>=3.1

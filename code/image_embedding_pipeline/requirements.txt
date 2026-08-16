@@ -1,0 +1,16 @@
+numpy>=1.24
+torch>=2.4
+torchvision>=0.19
+transformers>=4.46,<5
+huggingface_hub>=0.26
+safetensors
+monai>=1.4,<1.6
+nibabel
+pillow
+scipy
+pandas
+pyarrow>=15
+tqdm
+timm
+pyyaml
+omegaconf
