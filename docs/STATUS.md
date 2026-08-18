@@ -1,6 +1,6 @@
 # Project Status
 
-**Cập nhật:** 2026-08-16
+**Cập nhật:** 2026-08-18
 
 **Retrieval unit:** `visit_id`
 
@@ -36,7 +36,10 @@
 ### V1 — EHR + clinical note
 
 - Candidate ở cấp visit.
-- Score từ EHR graph embedding và clinical-note embedding.
+- Baseline đã triển khai tại `web/expert_review/`.
+- Mỗi modality được L2-normalize, weighted-concatenate và L2-normalize lại.
+- Exact cosine Top 20, loại query; kết quả được expert chọn và lưu append-only
+  vào SQLite để tạo ground truth.
 
 ### V2 — EHR + clinical note + image
 
@@ -49,7 +52,8 @@
 
 ## Chưa triển khai/chưa chốt
 
-- Code retrieval v1 và v2.
-- Trọng số late fusion và kích thước shortlist.
+- Code retrieval v2.
+- Trọng số V1 cuối cùng; expert-review hiện dùng default equal weights và Top 20.
+- Trọng số late fusion/rerank và kích thước shortlist cho V2.
 - Cách xử lý cặp visit không có modality ảnh chung.
 - Split train/validation/test theo `patient_id` và protocol đánh giá retrieval.

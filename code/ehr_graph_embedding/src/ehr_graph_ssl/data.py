@@ -34,11 +34,30 @@ RELATIONS = (
 )
 RELATION_TO_ID = {name: index for index, name in enumerate(RELATIONS)}
 
-FEATURE_DIMENSION = 7  # normalized value, count, time, flags incl. augmented mask
+# [proxy value, count, relative time, has proxy, has time, missing proxy,
+#  augmented mask, censored, interval, categorical/status, lower bound,
+#  upper bound, has lower, has upper, ordinal level, has ordinal]
+FEATURE_DIMENSION = 16
 MEDICATION_TIME_BUCKET_HOURS = 24
 # ``-1`` is a valid bucket for an event occurring during the 24 hours before
 # admission, so missing timestamps need an out-of-band sentinel.
 MISSING_TIME_BUCKET = -(2**31)
+
+SEMANTIC_TYPES = (
+    "missing",
+    "numeric_exact",
+    "numeric_censored",
+    "numeric_interval",
+    "numeric_approx",
+    "numeric_with_unit",
+    "categorical",
+    "semi_quantitative",
+    "not_applicable",
+    "not_performed",
+    "unknown",
+    "free_text",
+)
+SEMANTIC_TYPE_TO_ID = {name: index for index, name in enumerate(SEMANTIC_TYPES)}
 
 
 def _clean(value: Any) -> str:
@@ -106,6 +125,11 @@ class Event:
     count: int
     time_hours: float
     order_key: str = ""
+    numeric_target: float = math.nan
+    semantic_type: int = SEMANTIC_TYPE_TO_ID["missing"]
+    lower_bound: float = math.nan
+    upper_bound: float = math.nan
+    ordinal_level: float = math.nan
 
 
 @dataclass(frozen=True)
@@ -119,6 +143,11 @@ class GraphExample:
     time_hours: tuple[float, ...]
     order_keys: tuple[str, ...]
     edges: tuple[tuple[int, int, int], ...]
+    numeric_targets: tuple[float, ...] | None = None
+    semantic_types: tuple[int, ...] | None = None
+    lower_bounds: tuple[float, ...] | None = None
+    upper_bounds: tuple[float, ...] | None = None
+    ordinal_values: tuple[float, ...] | None = None
 
     @property
     def node_count(self) -> int:
@@ -144,12 +173,32 @@ class GraphExample:
         features: list[list[float]] = []
         numeric_targets: list[float] = []
         time_buckets: list[int] = []
+        source_targets = self.numeric_targets or self.numeric_values
+        source_semantic_types = self.semantic_types or tuple(
+            SEMANTIC_TYPE_TO_ID["numeric_exact"] if math.isfinite(value)
+            else SEMANTIC_TYPE_TO_ID["missing"]
+            for value in self.numeric_values
+        )
+        source_lower_bounds = self.lower_bounds or tuple(math.nan for _ in self.numeric_values)
+        source_upper_bounds = self.upper_bounds or tuple(math.nan for _ in self.numeric_values)
+        source_ordinal_values = self.ordinal_values or tuple(math.nan for _ in self.numeric_values)
         for old in kept:
             token = self.tokens[old]
             value = self.numeric_values[old]
+            target = source_targets[old]
+            semantic_type = int(source_semantic_types[old])
+            lower_bound = source_lower_bounds[old]
+            upper_bound = source_upper_bounds[old]
+            ordinal_level = source_ordinal_values[old]
             has_numeric = float(math.isfinite(value))
             stats = numeric_stats.get(token, {"median": 0.0, "iqr": 1.0})
             normalized = 0.0 if not has_numeric else float(np.clip((value - stats["median"]) / stats["iqr"], -5.0, 5.0))
+            normalized_lower = 0.0 if not math.isfinite(lower_bound) else float(
+                np.clip((lower_bound - stats["median"]) / stats["iqr"], -5.0, 5.0)
+            )
+            normalized_upper = 0.0 if not math.isfinite(upper_bound) else float(
+                np.clip((upper_bound - stats["median"]) / stats["iqr"], -5.0, 5.0)
+            )
             time = self.time_hours[old]
             has_time = float(math.isfinite(time))
             time_feature = 0.0 if not has_time else float(np.clip(time / 168.0, -4.0, 4.0))
@@ -157,7 +206,8 @@ class GraphExample:
             # stability.  MI corruption needs the original 24-hour window,
             # however, so retain its exact integer bucket separately.
             time_bucket = MISSING_TIME_BUCKET if not has_time else math.floor(time / 24.0)
-            augmented = float(old in masked_numeric and bool(has_numeric))
+            has_target = float(math.isfinite(target))
+            augmented = float(old in masked_numeric and bool(has_target))
             if augmented:
                 normalized = 0.0
             concept_id = vocab.get(token, vocab["<UNK>"])
@@ -173,8 +223,26 @@ class GraphExample:
                 has_time,
                 1.0 - has_numeric,
                 augmented,
+                float(semantic_type == SEMANTIC_TYPE_TO_ID["numeric_censored"]),
+                float(semantic_type == SEMANTIC_TYPE_TO_ID["numeric_interval"]),
+                float(semantic_type in {
+                    SEMANTIC_TYPE_TO_ID["categorical"],
+                    SEMANTIC_TYPE_TO_ID["semi_quantitative"],
+                    SEMANTIC_TYPE_TO_ID["not_applicable"],
+                    SEMANTIC_TYPE_TO_ID["not_performed"],
+                    SEMANTIC_TYPE_TO_ID["unknown"],
+                }),
+                normalized_lower,
+                normalized_upper,
+                float(math.isfinite(lower_bound)),
+                float(math.isfinite(upper_bound)),
+                float(0.0 if not math.isfinite(ordinal_level) else np.clip(ordinal_level / 4.0, 0.0, 1.0)),
+                float(math.isfinite(ordinal_level)),
             ])
-            numeric_targets.append(normalized if not augmented else float(np.clip((value - stats["median"]) / stats["iqr"], -5.0, 5.0)))
+            target_normalized = 0.0 if not has_target else float(
+                np.clip((target - stats["median"]) / stats["iqr"], -5.0, 5.0)
+            )
+            numeric_targets.append(target_normalized)
             time_buckets.append(time_bucket)
         edge_rows = [
             (reindex[source], reindex[target], relation)
@@ -261,7 +329,16 @@ def _aggregate_medicines(frame: pd.DataFrame, admission: dict[str, pd.Timestamp]
         start = admission.get(visit_id, pd.NaT)
         hours = math.nan if pd.isna(timestamp) or pd.isna(start) else float((timestamp - start).total_seconds() / 3600.0)
         numeric = pd.to_numeric(group.numeric, errors="coerce").median()
-        rows.append((visit_id, Event("MEDICINE", token, _finite_number(numeric), int(len(group)), hours)))
+        numeric_value = _finite_number(numeric)
+        rows.append((
+            visit_id,
+            Event(
+                "MEDICINE", token, numeric_value, int(len(group)), hours,
+                numeric_target=numeric_value,
+                semantic_type=SEMANTIC_TYPE_TO_ID["numeric_exact"] if math.isfinite(numeric_value)
+                else SEMANTIC_TYPE_TO_ID["missing"],
+            ),
+        ))
     return rows
 
 
@@ -284,24 +361,104 @@ def _aggregate_procedures(frame: pd.DataFrame, admission: dict[str, pd.Timestamp
     return rows
 
 
+def _semantic_type(value: Any, numeric_value: Any = math.nan) -> int:
+    text = _clean(value).casefold()
+    if text in SEMANTIC_TYPE_TO_ID:
+        return SEMANTIC_TYPE_TO_ID[text]
+    if math.isfinite(_finite_number(numeric_value)):
+        return SEMANTIC_TYPE_TO_ID["numeric_exact"]
+    return SEMANTIC_TYPE_TO_ID["missing"]
+
+
+def _observation_proxy(row: Any) -> float:
+    proxy = _finite_number(getattr(row, "value_proxy", math.nan))
+    if math.isfinite(proxy):
+        return proxy
+    exact = _finite_number(getattr(row, "result_numeric", math.nan))
+    if math.isfinite(exact):
+        return exact
+    lower = _finite_number(getattr(row, "result_lower_bound", math.nan))
+    upper = _finite_number(getattr(row, "result_upper_bound", math.nan))
+    if math.isfinite(lower) and math.isfinite(upper):
+        return (lower + upper) / 2.0
+    if math.isfinite(upper) and upper >= 0:
+        return upper / 2.0
+    if math.isfinite(lower):
+        return lower
+    return math.nan
+
+
 def _aggregate_observations(frame: pd.DataFrame, admission: dict[str, pd.Timestamp]) -> list[tuple[str, Event]]:
     frame = frame.copy()
     frame["visit_id"] = frame["visit_id"].map(_clean)
     frame["order_id"] = frame["order_id"].map(_clean)
     frame = frame[frame.visit_id.ne("")]
     frame["observed_time"] = _as_time(frame["observed_time"])
+    if "result_type" not in frame:
+        frame["result_type"] = np.where(
+            pd.to_numeric(frame["result_numeric"], errors="coerce").notna(),
+            "numeric_exact",
+            "missing",
+        )
+    if "result_operator" not in frame:
+        frame["result_operator"] = ""
+    if "value_proxy" not in frame:
+        frame["value_proxy"] = frame["result_numeric"]
+    for column in ("result_lower_bound", "result_upper_bound"):
+        if column not in frame:
+            frame[column] = np.nan
+    if "result_category" not in frame:
+        frame["result_category"] = ""
+    if "ordinal_level" not in frame:
+        frame["ordinal_level"] = np.nan
     frame["token"] = [
-        _opaque_token("OBSERVATION", _clean(code) or _clean(name), unit)
-        for code, name, unit in zip(frame.service_code, frame.observation_name, frame.unit)
+        _opaque_token(
+            "OBSERVATION",
+            _clean(code) or _clean(name),
+            unit,
+            _clean(result_type),
+            _clean(operator),
+            category if _clean(result_type).casefold() in {"categorical", "semi_quantitative"} else "",
+        )
+        for code, name, unit, result_type, operator, category in zip(
+            frame.service_code, frame.observation_name, frame.unit,
+            frame.result_type, frame.result_operator, frame.result_category,
+        )
     ]
-    frame["numeric"] = frame.result_numeric.map(_finite_number)
+    frame["numeric"] = frame.apply(_observation_proxy, axis=1)
+    frame["numeric_target"] = [
+        _finite_number(value) if _semantic_type(result_type, value) == SEMANTIC_TYPE_TO_ID["numeric_exact"]
+        else math.nan
+        for result_type, value in zip(frame.result_type, frame.result_numeric)
+    ]
+    frame["semantic_type_id"] = [
+        _semantic_type(result_type, value)
+        for result_type, value in zip(frame.result_type, frame.result_numeric)
+    ]
     rows: list[tuple[str, Event]] = []
     for (visit_id, order_id, token), group in frame.groupby(["visit_id", "order_id", "token"], sort=False):
         timestamp = group.observed_time.min()
         start = admission.get(visit_id, pd.NaT)
         hours = math.nan if pd.isna(timestamp) or pd.isna(start) else float((timestamp - start).total_seconds() / 3600.0)
         numeric = pd.to_numeric(group.numeric, errors="coerce").median()
-        rows.append((visit_id, Event("OBSERVATION", token, _finite_number(numeric), int(len(group)), hours, order_id)))
+        target = pd.to_numeric(group.numeric_target, errors="coerce").median()
+        semantic_type = int(group.semantic_type_id.mode(dropna=True).iloc[0]) if not group.semantic_type_id.dropna().empty else SEMANTIC_TYPE_TO_ID["missing"]
+        lower = pd.to_numeric(group.result_lower_bound, errors="coerce").min()
+        upper = pd.to_numeric(group.result_upper_bound, errors="coerce").max()
+        ordinal_level = pd.to_numeric(group.ordinal_level, errors="coerce").median()
+        numeric_value = _finite_number(numeric)
+        numeric_target = _finite_number(target)
+        rows.append((
+            visit_id,
+            Event(
+                "OBSERVATION", token, numeric_value, int(len(group)), hours, order_id,
+                numeric_target=numeric_target,
+                semantic_type=semantic_type,
+                lower_bound=_finite_number(lower),
+                upper_bound=_finite_number(upper),
+                ordinal_level=_finite_number(ordinal_level),
+            ),
+        ))
     return rows
 
 
@@ -310,6 +467,11 @@ def _build_graph(visit_id: str, split: str, events: Sequence[Event]) -> GraphExa
     node_types = [TYPE_TO_ID["VISIT"]]
     tokens = ["<PAD>"]
     numeric_values = [math.nan]
+    numeric_targets = [math.nan]
+    semantic_types = [SEMANTIC_TYPE_TO_ID["missing"]]
+    lower_bounds = [math.nan]
+    upper_bounds = [math.nan]
+    ordinal_values = [math.nan]
     counts = [0]
     time_hours = [0.0]
     order_keys = [""]
@@ -328,6 +490,11 @@ def _build_graph(visit_id: str, split: str, events: Sequence[Event]) -> GraphExa
         node_types.append(TYPE_TO_ID[event.node_type])
         tokens.append(event.token)
         numeric_values.append(event.numeric_value)
+        numeric_targets.append(event.numeric_target)
+        semantic_types.append(event.semantic_type)
+        lower_bounds.append(event.lower_bound)
+        upper_bounds.append(event.upper_bound)
+        ordinal_values.append(event.ordinal_level)
         counts.append(event.count)
         time_hours.append(event.time_hours)
         order_keys.append(event.order_key)
@@ -374,6 +541,11 @@ def _build_graph(visit_id: str, split: str, events: Sequence[Event]) -> GraphExa
         time_hours=tuple(time_hours),
         order_keys=tuple(order_keys),
         edges=tuple(edges),
+        numeric_targets=tuple(numeric_targets),
+        semantic_types=tuple(semantic_types),
+        lower_bounds=tuple(lower_bounds),
+        upper_bounds=tuple(upper_bounds),
+        ordinal_values=tuple(ordinal_values),
     )
 
 
@@ -404,7 +576,9 @@ def load_structured_dataset(data_root: Path, *, seed: int = 20260812, limit_visi
         "visit_id", "order_id", "service_code", "procedure_name", "status", "ordered_time", "start_time",
     ])
     observations = _read_table(data_root, "observations", [
-        "visit_id", "order_id", "service_code", "observation_name", "result_numeric", "unit", "observed_time",
+        "visit_id", "order_id", "service_code", "observation_name", "result_numeric",
+        "result_type", "result_operator", "value_proxy", "result_lower_bound", "result_upper_bound",
+        "result_category", "ordinal_level", "unit", "observed_time",
     ])
     source_frames = [diagnoses, medicines, procedures, observations]
     for frame in source_frames:
@@ -433,7 +607,8 @@ def load_structured_dataset(data_root: Path, *, seed: int = 20260812, limit_visi
     document_frequency: dict[str, int] = {}
     for example in train_examples:
         seen: set[str] = set()
-        for token, value in zip(example.tokens[1:], example.numeric_values[1:]):
+        target_values = example.numeric_targets or example.numeric_values
+        for token, value in zip(example.tokens[1:], target_values[1:]):
             if math.isfinite(value):
                 values_by_token.setdefault(token, []).append(value)
             seen.add(token)
@@ -459,6 +634,14 @@ def load_structured_dataset(data_root: Path, *, seed: int = 20260812, limit_visi
         "temporal_aggregation": {
             "medicines": {"relative_time_bucket_hours": MEDICATION_TIME_BUCKET_HOURS},
             "observations": "order_id_and_event_token",
+        },
+        "semantic_value_policy": {
+            "feature_dimension": FEATURE_DIMENSION,
+            "numeric_loss_targets": "numeric_exact_only",
+            "numeric_proxy": "value_proxy_or_interval_midpoint_or_left_bound_half",
+            "censor_bounds_as_features": True,
+            "categorical_values_in_concept_token": True,
+            "supported_types": list(SEMANTIC_TYPES),
         },
         "temporal_relations": [
             "next_same_test", "prev_same_test",

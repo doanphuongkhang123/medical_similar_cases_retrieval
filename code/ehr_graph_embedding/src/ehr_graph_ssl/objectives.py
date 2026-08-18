@@ -93,9 +93,10 @@ def choose_mask_indices(
 ) -> list[int]:
     """Sample approximately ratio nodes per type without erasing a core type."""
     if numeric_only:
+        numeric_targets = example.numeric_targets or example.numeric_values
         candidates = [
             index
-            for index, value in enumerate(example.numeric_values)
+            for index, value in enumerate(numeric_targets)
             if index
             and example.node_types[index] == TYPE_TO_ID["OBSERVATION"]
             and math.isfinite(value)

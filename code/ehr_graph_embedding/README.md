@@ -3,6 +3,10 @@
 Pipeline tạo một graph cho mỗi visit và xuất một embedding 256 chiều đã
 L2-normalize. Clinical note và image không đi vào encoder này.
 
+Contract semantic-v2 chi tiết, thứ tự 16 numeric features, objective từng stage
+và downstream expert-review được ghi tại
+[`docs/CODE_PIPELINE_HANDOFF.md`](../../docs/CODE_PIPELINE_HANDOFF.md).
+
 Split hiện tại được hash theo `visit_id` với tỉ lệ train/validation/test
 70/15/15. Đây là split phục vụ pretraining hiện hành, chưa phải protocol
 patient-disjoint cuối cùng cho đánh giá retrieval.
@@ -42,5 +46,6 @@ Output chính là `visit_embeddings.parquet` và
 `embedding_quality_report.json`. Pipeline dừng tại embedding, không tạo index
 hoặc candidate pool.
 
-Workbook preprocessing dùng
-`preprocessing/preprocess_ehr_tables.py`; dữ liệu thật chỉ chạy trên Vaipe.
+Workbook semantic preprocessing hiện dùng
+`preprocessing/preprocess_ehr_tables_v2.py`; v2 giữ exact/censored/interval/
+categorical semantics và sinh audit tables. Dữ liệu thật chỉ chạy trên Vaipe.

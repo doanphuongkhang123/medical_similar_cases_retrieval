@@ -11,7 +11,9 @@ Repository giữ ba pipeline tạo embedding độc lập:
 
 `code/image_embedding_pipeline/merge_image_cases_with_ehr.py` nối image
 embedding vào đúng `visit_id` để chuẩn bị candidate pool cho retrieval v2.
-Retrieval/fusion chính thức chưa được triển khai.
+`web/expert_review/` triển khai baseline retrieval v1 EHR + clinical note để
+chuyên gia duyệt Top 20 và tạo ground truth append-only. Retrieval v2 có image
+vẫn chưa được triển khai.
 
 ## Đọc trước khi tiếp tục ở chat khác
 
@@ -19,6 +21,8 @@ Retrieval/fusion chính thức chưa được triển khai.
 2. [docs/PIPELINES.md](docs/PIPELINES.md): luồng ba encoder và hai bản retrieval.
 3. [docs/DATA.md](docs/DATA.md): data contract, ID và artifact hiện có.
 4. [docs/EXPERIMENTS.md](docs/EXPERIMENTS.md): các run đã hoàn tất.
+5. [docs/CODE_PIPELINE_HANDOFF.md](docs/CODE_PIPELINE_HANDOFF.md): contract
+   semantic-v2, graph SSL ba stage, embedding và expert-review đúng theo code.
 
 Code server: `/mnt/disk4/similar_cases_retrieval/code/`. Dữ liệu và model
 artifact chỉ tồn tại trên Vaipe, không đưa vào Git.

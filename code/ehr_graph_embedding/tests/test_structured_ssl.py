@@ -11,8 +11,9 @@ import pandas as pd
 import torch
 
 from ehr_graph_ssl.data import (
-    GraphExample, MISSING_TIME_BUCKET, RELATION_TO_ID, TYPE_TO_ID,
-    _aggregate_medicines, _build_graph, load_structured_dataset,
+    FEATURE_DIMENSION, GraphExample, MISSING_TIME_BUCKET, RELATION_TO_ID,
+    SEMANTIC_TYPE_TO_ID, TYPE_TO_ID, _aggregate_medicines, _aggregate_observations,
+    _build_graph, load_structured_dataset,
 )
 from ehr_graph_ssl.model import StructuredGraphSSL
 from ehr_graph_ssl.objectives import (
@@ -57,6 +58,7 @@ class StructuredSSLTest(unittest.TestCase):
         graph = self.example.tensors(self.vocab, self.stats, torch.device("cpu"), concept_mask=[1], numeric_mask=[2])
         self.assertEqual(graph["concept_ids"].tolist()[1], self.vocab["<MASK>"])
         self.assertEqual(float(graph["numeric"][2, 6]), 1.0)
+        self.assertEqual(graph["numeric"].shape[1], FEATURE_DIMENSION)
         self.assertEqual(graph["time_buckets"].tolist(), [0, 0, 30, 30])
         model = StructuredGraphSSL(vocab_size=len(self.vocab), node_type_count=5, relation_count=len(RELATION_TO_ID), hidden_dim=32, output_dim=16, layers=2, heads=4, dropout=0.0)
         hidden, embedding = model(**graph)
@@ -231,6 +233,38 @@ class StructuredSSLTest(unittest.TestCase):
         self.assertIn(
             (2, 1, RELATION_TO_ID["prev_same_medication"]), graph.edges,
         )
+
+    def test_semantic_observations_keep_censoring_categories_and_proxy(self) -> None:
+        frame = pd.DataFrame({
+            "visit_id": ["fixture-v1"] * 5,
+            "order_id": ["O1"] * 5,
+            "service_code": ["LAB"] * 5,
+            "observation_name": ["TEST"] * 5,
+            "result_numeric": [2.0, np.nan, np.nan, np.nan, np.nan],
+            "value_proxy": [2.0, 2.5, 4.0, 200.0, np.nan],
+            "result_type": ["numeric_exact", "numeric_censored", "numeric_interval", "categorical", "free_text"],
+            "result_lower_bound": [np.nan, np.nan, 3.0, np.nan, np.nan],
+            "result_upper_bound": [np.nan, 5.0, 5.0, np.nan, np.nan],
+            "result_category": ["", "", "", "negative", ""],
+            "unit": ["mg/L"] * 5,
+            "observed_time": ["2026-01-01T01:00:00Z"] * 5,
+        })
+        events = [event for _, event in _aggregate_observations(
+            frame, {"fixture-v1": pd.Timestamp("2026-01-01T00:00:00Z")},
+        )]
+        semantic_types = {event.semantic_type for event in events}
+        self.assertIn(SEMANTIC_TYPE_TO_ID["numeric_exact"], semantic_types)
+        self.assertIn(SEMANTIC_TYPE_TO_ID["numeric_censored"], semantic_types)
+        self.assertIn(SEMANTIC_TYPE_TO_ID["numeric_interval"], semantic_types)
+        self.assertIn(SEMANTIC_TYPE_TO_ID["categorical"], semantic_types)
+        self.assertIn(SEMANTIC_TYPE_TO_ID["free_text"], semantic_types)
+        self.assertTrue(any(event.numeric_target == 2.0 for event in events))
+        self.assertTrue(any(event.numeric_value == 2.5 for event in events))
+        graph = _build_graph("fixture-v1", "train", events)
+        vocab = {"<PAD>": 0, "<MASK>": 1, "<UNK>": 2}
+        vocab.update({token: index for index, token in enumerate(graph.tokens[1:], start=3)})
+        tensor_bundle = graph.tensors(vocab, {}, torch.device("cpu"))
+        self.assertEqual(tuple(tensor_bundle["numeric"].shape), (6, FEATURE_DIMENSION))
 
 
 if __name__ == "__main__":

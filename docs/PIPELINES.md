@@ -52,6 +52,20 @@ image manifest + DICOM study metadata + EHR visits
 
 Source: `code/image_embedding_pipeline/merge_image_cases_with_ehr.py`.
 
+## Expert-review retrieval v1 đã triển khai
+
+```text
+EHR visit embedding + clinical-note visit embedding
+    -> L2-normalize từng block
+    -> positive weight + concatenate + L2-normalize
+    -> exact cosine Top 20, loại query
+    -> expert selection
+    -> append-only SQLite ground truth
+```
+
+Source: `web/expert_review/`. Contract code end-to-end nằm trong
+`docs/CODE_PIPELINE_HANDOFF.md`.
+
 ## Hai bản retrieval đã chốt về phạm vi
 
 1. V1: EHR graph embedding + clinical-note embedding, đơn vị `visit_id`.
@@ -62,5 +76,6 @@ Một visit có thể có nhiều series ảnh. Baseline đang đề xuất là 
 từng series, mean-pooling riêng trong CT/MRI/XQ rồi L2-normalize lại. CT, MRI
 và XQ không cosine trực tiếp với nhau vì encoder/dimension khác nhau.
 
-Code retrieval, trọng số fusion, shortlist size và cách xử lý cặp không có
-modality ảnh chung vẫn chưa chốt/triển khai; xem `STATUS.md`.
+V1 expert-review hiện cố định shortlist Top 20 và mặc định equal weights cho
+EHR/note. Retrieval v2, trọng số image fusion và cách xử lý cặp không có modality
+ảnh chung vẫn chưa chốt/triển khai; xem `STATUS.md`.
