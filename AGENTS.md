@@ -22,12 +22,18 @@ This project has two distinct environments. Do not treat them as interchangeable
 - SSH alias: `vaipe_aiotlab`
 - Code root: `/mnt/disk4/similar_cases_retrieval/code`
 - Data root: `/mnt/disk4/similar_cases_retrieval/data`
-- Canonical structured-EHR snapshot:
-  `/mnt/disk4/similar_cases_retrieval/data/ehr_preprocessed/ehr_preprocessed_full`
+- Canonical raw EHR workbook:
+  `/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx`
+- `/mnt/disk4/similar_cases_retrieval/data/ehr_preprocessed/` contains
+  downstream derived artifacts. Do not silently use those artifacts as the
+  source of a new pipeline that is required to start from raw data.
 - The server contains the real datasets and shared NVIDIA GPUs.
 - Run unit/integration tests, schema audits, preprocessing, model downloads,
   training, and inference on this server unless the user explicitly says
   otherwise.
+- For every new data pipeline, record the raw input path and SHA-256 in its
+  manifest. Intermediate normalized tables must live inside that pipeline's
+  own data folder so lineage does not depend on another pipeline's outputs.
 - Clinical data, embeddings, checkpoints, caches, logs, and experiment outputs
   stay under the server data/experiment areas and never enter Git.
 

@@ -7,6 +7,13 @@
 **Phạm vi code hiện hành:** semantic EHR preprocessing v2, structured-EHR graph
 SSL ba stage, xuất visit embedding, retrieval EHR + note và expert review.
 
+Context Clues frozen inference nằm độc lập tại `code/context_clues/`. Pipeline
+đọc trực tiếp workbook `data/raw/thông tin bệnh án.xlsx`, tự dựng năm bảng
+structured trong `data/context_clues/raw_pipeline_v1/`, bắt buộc local-code →
+OMOP mapping có review rồi dựng timeline đến discharge. Checkpoint
+`StanfordShahLab/gpt-base-4096-clmbr` là gated; data-only raw đã hoàn thành
+nhưng artifact embedding 3.500 visit chưa được tạo.
+
 Tài liệu này mô tả contract đúng theo code đang có. Dữ liệu thật, checkpoint,
 embedding và SQLite review là runtime artifact trên Vaipe, không đưa vào Git.
 

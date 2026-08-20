@@ -1,4 +1,4 @@
-# Ba pipeline embedding
+# Bốn pipeline embedding
 
 ## 1. EHR graph embedding
 
@@ -29,6 +29,22 @@ clinical_notes.parquet + visits.parquet -> group all sections by visit_id
 ```
 
 Source: `code/text_embedding_pipeline/`.
+
+## 4. Context Clues structured-EHR embedding
+
+```text
+raw/thông tin bệnh án.xlsx
+    -> Context Clues-owned visits + diagnoses + medicines + procedures + observations
+    -> reviewed local-concept to OMOP map
+    -> chronological patient timeline through target discharge
+    -> Context Clues GPT-base-4096 (frozen)
+    -> last-token 768-D L2-normalized visit embedding
+```
+
+Source: `code/context_clues/`. Data trung gian và artifact nằm riêng dưới
+`data/context_clues/raw_pipeline_v1/`. Pipeline không tiêu thụ
+`data/ehr_preprocessed/`, không dựng clinical note/graph. Inference bị chặn nếu
+mapping/tokenizer coverage thấp hoặc một visit không còn clinical token.
 
 ## Contract chung
 

@@ -1,6 +1,6 @@
 # Similar Cases Retrieval
 
-Repository giữ ba pipeline tạo embedding độc lập:
+Repository giữ bốn pipeline tạo embedding độc lập:
 
 1. `code/ehr_graph_embedding/`: biểu diễn một visit EHR thành graph, pretrain
    GNN qua ba stage và xuất một embedding cho mỗi visit.
@@ -8,6 +8,9 @@ Repository giữ ba pipeline tạo embedding độc lập:
    modality và xuất embedding ảnh.
 3. `code/text_embedding_pipeline/`: gom toàn bộ clinical note theo visit, đưa
    qua Qwen3-Embedding-8B và xuất embedding văn bản.
+4. `code/context_clues/`: đọc workbook EHR raw, dựng structured events trong
+   data folder riêng, map sang OMOP-standard event, rồi chạy Context Clues
+   GPT-base-4096 để xuất một frozen embedding cho mỗi visit.
 
 `code/image_embedding_pipeline/merge_image_cases_with_ehr.py` nối image
 embedding vào đúng `visit_id` để chuẩn bị candidate pool cho retrieval v2.

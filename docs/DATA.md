@@ -21,6 +21,23 @@
   giá retrieval phải tạo split mới theo `patient_id` để tránh leakage giữa
   nhiều visit của cùng bệnh nhân.
 
+## Context Clues structured EHR
+
+- Input gốc bắt buộc là workbook
+  `/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx`, không
+  lấy artifact từ `data/ehr_preprocessed/` làm nguồn.
+- Pipeline tự dựng năm bảng `visits`, `diagnoses`, `medicines`, `procedures`,
+  `observations` dưới `data/context_clues/raw_pipeline_v1/structured/`; không
+  dựng hoặc đọc `clinical_notes` và graph.
+- Local concept phải được review và map sang code OMOP-standard có trong
+  tokenizer Context Clues.
+- Một target `visit_id` dùng timeline cùng bệnh nhân đến `discharge_time` và
+  lấy tối đa 4.096 token gần nhất.
+- Data/output riêng:
+  `/mnt/disk4/similar_cases_retrieval/data/context_clues/raw_pipeline_v1/`.
+- Contract output cuối: đúng một row/visit trong
+  `embeddings/gpt-base-4096-clmbr/visit_embeddings.parquet`.
+
 ## Image
 
 - Đơn vị output mặc định: một embedding cho mỗi source image/volume.
