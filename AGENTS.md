@@ -150,12 +150,15 @@ GitHub contains only files required for the main runnable project:
   pipelines;
 - tests, runtime shell scripts, dependency/config files;
 - essential pipeline contracts/READMEs;
+- maintained model/pipeline explanations under `docs/support/` that directly
+  describe the current runnable pipeline and contain no clinical data;
 - this `AGENTS.md` file and other explicitly designated agent instructions.
 
 Do not publish auxiliary or one-off material, including:
 
 - slides, presentation builds, figures made only for explanation;
-- ad-hoc explanations, scratch analyses, temporary reports, chat exports;
+- ad-hoc or stale explanations outside `docs/support/`, scratch analyses,
+  temporary reports, chat exports;
 - local visualization artifacts, recovered files, caches, or generated media;
 - real data, derived Parquet/CSV files, embeddings, checkpoints, model weights,
   experiment outputs, logs, credentials, or tokens.
@@ -164,6 +167,11 @@ Keep auxiliary material in local-only ignored directories such as
 `.local_artifacts/` or another clearly local path. Agent instruction Markdown
 is a deliberate exception: it must be present locally, tracked in GitHub, and
 synced to the server.
+
+An explanation may be promoted from `.local_artifacts/` to `docs/support/`
+only when the user explicitly requests publication and the document has been
+checked against the current code/data contract. Do not promote slide build
+trees, recovered chats, rendered media, runtime audits, or obsolete variants.
 
 Before every commit/push:
 
