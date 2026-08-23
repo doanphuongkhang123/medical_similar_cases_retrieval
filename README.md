@@ -8,9 +8,11 @@ Repository giữ bốn pipeline tạo embedding độc lập:
    modality và xuất embedding ảnh.
 3. `code/text_embedding_pipeline/`: gom toàn bộ clinical note theo visit, đưa
    qua Qwen3-Embedding-8B và xuất embedding văn bản.
-4. `code/context_clues/`: đọc workbook EHR raw, dựng structured events trong
-   data folder riêng, map sang OMOP-standard event, rồi chạy Context Clues
-   GPT-base-4096 để xuất một frozen embedding cho mỗi visit.
+4. `code/ehr_foundation_encoders/`: đọc workbook EHR raw, dựng một common
+   MEDS-compatible event store, serialize bằng `smb_utils`, rồi chạy
+   `SMB-v1_Qwen3-1.7b_multi-objective` để xuất một frozen embedding cho mỗi
+   visit. Code Context Clues cũ vẫn được giữ để truy vết nhưng checkpoint còn
+   gated và không phải pipeline foundation encoder đang triển khai.
 
 `code/image_embedding_pipeline/merge_image_cases_with_ehr.py` nối image
 embedding vào đúng `visit_id` để chuẩn bị candidate pool cho retrieval v2.

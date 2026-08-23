@@ -12,7 +12,7 @@
 4. Structured EHR → common MEDS-compatible events →
    `SMB-v1_Qwen3-1.7b_multi-objective` → frozen visit embedding. Data-only và
    official `smb_utils` serialization/token-length audit đã chạy trực tiếp từ
-   workbook raw; model inference chưa chạy.
+   workbook raw; checkpoint đã tải và smoke inference đang chờ GPU đủ trống.
 
 ## Dữ liệu và embedding
 
@@ -25,8 +25,8 @@
   được lưu.
 - Context Clues data-only cũ vẫn ở `data/context_clues/raw_pipeline_v1/`, nhưng
   model path tạm dừng vì checkpoint gated và không phải input của SMB pipeline.
-- SMB tokenizer của checkpoint pin đã tải thành công trên server mà không tải
-  model weights. Tokenizer và paper cùng khai báo max sequence length 3.300.
+- SMB tokenizer và checkpoint pin đã tải thành công trên server. Tokenizer và
+  paper cùng khai báo max sequence length 3.300.
   Cảnh báo regex được xác nhận là false-positive của Transformers cho tokenizer
   Qwen local; loader pin `fix_mistral_regex=False`.
 - Token audit đủ 3.500 visit: full history median 2.618,5, p95 10.924,2, max
@@ -38,6 +38,13 @@
   3.300). Có 2.300 visit giữ toàn bộ current-visit events; 1.200 visit giữ một
   phần recent events, nhưng không visit nào mất toàn bộ current clinical events.
   Selection plan không nhân bản common events.
+- Checkpoint revision `81a889a17c84160eaab4c975c70e451482bc9e56` đã tải đủ
+  vào server data root. `model.safetensors` SHA-256 là
+  `f2c15be357477e8553d2953a075fb9527fdad6db0c2f6aee3ece9c43d862394c`;
+  custom model source đã review và pin SHA-256. Không có lỗi quyền truy cập.
+- Smoke inference đã xếp hàng trong tmux `khangdp` với ngưỡng 18.000 MiB GPU
+  trống; output dự kiến tại
+  `data/ehr_foundation_encoders/experiments/smb_v1_qwen3_1_7b/smoke_inference/`.
 - Clinical note: đã embed đủ 3.500 visit.
 - Image manifest: 1.000 bệnh nhân; 999 bệnh nhân có image embedding.
 - Image embeddings hợp lệ: CT 3.322 × 512-D, MRI 3.904 × 768-D,
@@ -77,8 +84,8 @@
 
 ## Chưa triển khai/chưa chốt
 
-- Tải checkpoint weights và chạy smoke inference sau khi inspect custom model
-  code; embedding dùng last-token pooling theo hướng dẫn chính thức.
+- Hoàn tất smoke inference đang chờ GPU, sau đó chạy full 3.500 visit embedding
+  với last-token pooling và verify one-row-per-visit/finite/lineage.
 - Review mapping local medicine/lab/procedure sang standard terminology để
   giảm domain shift; không chặn SMB data-only vì model nhận MEDS text code.
 - Context Clues tạm dừng đến khi checkpoint được cấp quyền.

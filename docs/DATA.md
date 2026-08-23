@@ -67,6 +67,13 @@
   gần nhất, chọn ở source-event boundary rồi re-serialize bằng `smb_utils`.
   Selection plan chỉ lưu `first_retained_event_order_within_patient` cùng audit
   counts/hash; events vẫn chỉ có một bản trong `common/events.parquet`.
+- Checkpoint revision `81a889a17c84160eaab4c975c70e451482bc9e56` được lưu
+  riêng tại `data/ehr_foundation_encoders/models/`; downloader kiểm tra exact
+  file allow-list và SHA-256 của custom source/weights trước khi publish.
+- Embedding contract là một vector 2.048-D cho mỗi target visit, lấy tại last
+  non-padding token của final decoder hidden state. Smoke audit không persist
+  text, token IDs hoặc embedding; full inference artifact phải có đúng một row
+  cho mỗi `visit_id` và kèm manifest lineage.
 
 ## Image
 

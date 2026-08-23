@@ -1,0 +1,4 @@
+-r requirements-data.txt
+accelerate>=1.14,<2
+safetensors>=0.8,<1
+torch>=2.4,<3

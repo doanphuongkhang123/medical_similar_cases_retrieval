@@ -32,7 +32,7 @@ Chỉ ghi các run thuộc một trong bốn pipeline embedding hoặc hai bản
 - EHR graph 3-stage pretraining;
 - image encoder inference;
 - clinical-note text encoder inference.
-- Context Clues structured-EHR frozen inference.
+- SMB structured-EHR frozen inference.
 
 Mỗi run cần ghi host/environment, Git commit, dataset path/version, model
 revision, preprocessing, split, seed, command, exit status và artifact output.

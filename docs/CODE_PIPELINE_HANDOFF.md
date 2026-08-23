@@ -14,6 +14,12 @@ OMOP mapping có review rồi dựng timeline đến discharge. Checkpoint
 `StanfordShahLab/gpt-base-4096-clmbr` là gated; data-only raw đã hoàn thành
 nhưng artifact embedding 3.500 visit chưa được tạo.
 
+Pipeline structured-EHR foundation encoder hiện hành nằm tại
+`code/ehr_foundation_encoders/` và dùng SMB-v1 Qwen3 1.7B thay cho checkpoint
+Context Clues đang gated. Pipeline này tự đi từ cùng workbook raw đến common
+MEDS-compatible events, audit/window tối đa 3.300 token và checkpoint pin;
+không đọc output data-only của Context Clues.
+
 Tài liệu này mô tả contract đúng theo code đang có. Dữ liệu thật, checkpoint,
 embedding và SQLite review là runtime artifact trên Vaipe, không đưa vào Git.
 

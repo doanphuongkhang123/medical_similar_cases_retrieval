@@ -38,15 +38,18 @@ raw/thông tin bệnh án.xlsx
     -> one canonical MEDS-compatible event store
     -> chronological patient timeline through target discharge
     -> official smb_utils serialization
-    -> [next] SMB-v1-1.7B tokenizer/model
+    -> 3,300-token audit + event-boundary recent window
+    -> pinned SMB-v1 Qwen3 1.7B checkpoint
+    -> [running] last-token smoke inference
     -> [next] one frozen embedding per visit
 ```
 
 Source: `code/ehr_foundation_encoders/`. Data trung gian và artifact nằm riêng
 dưới `data/ehr_foundation_encoders/raw_pipeline_v1/`. Pipeline không tiêu thụ
 `data/ehr_preprocessed/` hay output Context Clues, không dựng clinical
-note/graph và không nhân bản event table cho mỗi encoder/target. Data-only và
-serialization audit đã hoàn tất; tokenizer/model inference chưa chạy.
+note/graph và không nhân bản event table cho mỗi encoder/target. Data-only,
+serialization, token audit, window selection và checkpoint download đã hoàn
+tất; smoke inference đang chờ GPU dùng chung đủ trống.
 
 Context Clues code/artifact cũ vẫn được giữ để truy vết nhưng model path đang
 tạm dừng do checkpoint gated.

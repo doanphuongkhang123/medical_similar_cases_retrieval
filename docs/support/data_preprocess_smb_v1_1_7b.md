@@ -3,9 +3,10 @@
 ## Mục tiêu
 
 Pipeline chuyển workbook EHR raw thành input MEDS-compatible cho
-`standardmodelbio/SMB-v1_Qwen3-1.7b_multi-objective`, nhưng chưa tải model
-weights hoặc chạy inference. Retrieval unit vẫn là `visit_id`: mỗi target visit
-dùng toàn bộ lịch sử structured EHR của cùng bệnh nhân đến `discharge_time`.
+`standardmodelbio/SMB-v1_Qwen3-1.7b_multi-objective`. Checkpoint đã được tải;
+smoke inference là stage riêng sau data/window validation. Retrieval unit vẫn
+là `visit_id`: mỗi target visit dùng lịch sử structured EHR của cùng bệnh nhân
+đến `discharge_time`, sau đó áp dụng recent-event window nếu vượt giới hạn.
 
 Luồng xử lý:
 
@@ -18,7 +19,8 @@ raw XLSX
   -> official smb_utils serialization audit
   -> tokenizer audit tối đa 3.300 token
   -> demographics + maximal recent-event suffix selection
-  -> [bước sau] SMB-v1_Qwen3-1.7b_multi-objective embedding
+  -> pinned checkpoint + last-token smoke inference
+  -> [bước sau] full SMB-v1_Qwen3-1.7b_multi-objective embedding
 ```
 
 ## Lineage và phạm vi
@@ -34,8 +36,9 @@ Pipeline tự ghi năm bảng `visits`, `diagnoses`, `medicines`, `procedures` v
 pipeline nhưng không đọc `data/ehr_preprocessed/` hay artifact của Context
 Clues. Raw path và SHA-256 được ghi vào root, structured và common manifest.
 
-Clinical notes, image, graph, embeddings và model weights không thuộc stage
-này. Toàn bộ xử lý là CPU-only và script đặt `CUDA_VISIBLE_DEVICES=""`.
+Clinical notes, image, graph, embeddings và model weights không thuộc data
+stage này. Toàn bộ xử lý data là CPU-only và script đặt
+`CUDA_VISIBLE_DEVICES=""`; checkpoint/inference dùng data/experiment root riêng.
 
 ## Vì sao chỉ lưu một bảng event
 
@@ -121,8 +124,8 @@ Checkpoint SMB được pin tại revision:
 dữ liệu vừa tăng bề mặt dữ liệu nhạy cảm. Audit chỉ ghi số event, số ký tự, số
 dòng, trạng thái non-empty và SHA-256 của serialization.
 
-Tokenizer của gated checkpoint đã được tải trên server bằng tài khoản được cấp
-quyền; model weights chưa được tải. Checkpoint khai báo `Qwen2Tokenizer`.
+Tokenizer và weights của checkpoint đã được tải trên server mà không gặp lỗi
+quyền. Checkpoint khai báo `Qwen2Tokenizer`.
 Cảnh báo Mistral regex của Transformers đã được kiểm tra bằng chuỗi giả lập và
 xác nhận là false-positive khi load tokenizer Qwen từ local. Loader đặt rõ
 `fix_mistral_regex=False`; không thay tokenizer SMB bằng tokenizer Qwen gốc vì
@@ -173,6 +176,34 @@ Giới hạn 3.300 lấy từ `tokenizer_config.json` của checkpoint và max s
 length tác giả công bố trong paper. Giới hạn 4.096 thuộc model
 `smb-v1-1.7B` cũ, không phải checkpoint Qwen3 multi-objective hiện hành.
 
+## Checkpoint và embedding contract
+
+Checkpoint downloader chỉ chấp nhận đúng chín file được review, pin commit
+revision, và pin hai checksum quan trọng:
+
+- `modeling_smb_unstructured.py`:
+  `4d03a548ac8a9441bba388f63ead88787a566d61bb933255b9d6807633cffe13`;
+- `model.safetensors`:
+  `f2c15be357477e8553d2953a075fb9527fdad6db0c2f6aee3ece9c43d862394c`.
+
+Custom source là wrapper mỏng quanh Qwen3. Review không thấy thao tác shell,
+network, ghi/xóa file động, `eval` hoặc `exec`. Smoke loader vẫn dùng
+`local_files_only=True`, offline Hugging Face mode và chỉ trust đúng source có
+checksum pin.
+
+Model config khai báo hidden size 2.048. Pipeline lấy vector của last
+non-padding token từ final decoder hidden state. Gọi decoder trực tiếp cho kết
+quả hidden state tương đương nhánh `outputs.hidden_states[-1]` của causal-LM,
+nhưng không materialize logits kích thước sequence × vocabulary. Smoke chạy ba
+window xác định (ngắn nhất, gần median, dài nhất), kiểm tra serialization hash,
+token count, dimension, finite và positive norm. Nó không ghi text, token IDs,
+embedding, patient ID hoặc visit ID.
+
+Wrapper custom hiện không khai báo hỗ trợ SDPA với Transformers 4.57.6. Loader
+vì vậy dùng `attn_implementation="eager"` theo chính lỗi hướng dẫn của
+Transformers; không monkey-patch source đã pin. Ngưỡng GPU 18.000 MiB dành dư
+địa cho attention eager ở window dài 3.300 token.
+
 Nguồn contract chính thức:
 
 - https://standardmodel.bio/your-data.html
@@ -214,12 +245,26 @@ token-length audit:
 ./run_smb_tokenizer_download_server.sh
 ./run_smb_token_audit_server.sh
 ./run_smb_window_selection_server.sh
+./run_smb_checkpoint_download_server.sh
 ```
 
 Downloader dùng allow-list, từ chối weight extensions và chỉ đổi staging
 directory thành artifact chính thức sau khi download/validation hoàn tất.
 Token audit manifest ghi path và SHA-256 của raw workbook, common manifest,
 events, targets và toàn bộ tokenizer files để tái lập lineage.
+
+Trước smoke inference, kiểm tra GPU dùng chung. Script waiter bền vững chạy
+trong tmux, có `flock` chống launch trùng, poll 60 giây và chỉ chọn GPU có ít
+nhất 18.000 MiB trống:
+
+```bash
+./wait_run_smb_smoke_server.sh
+```
+
+Script gọi trực tiếp
+`/mnt/disk1/khangdp/conda_envs/scr_env/bin/python`, ghi PID/log dưới
+`data/ehr_foundation_encoders/experiments/smb_v1_qwen3_1_7b/logs/`, và ghi
+smoke manifest dưới cùng experiment root khi hoàn tất.
 
 Smoke audit một số target:
 
@@ -262,6 +307,6 @@ SMB_SERIALIZATION_MAX_TARGETS=20 \
         └── manifest.json
 ```
 
-Không artifact nào trong stage này được gọi là embedding. Embedding chỉ được
-tạo ở stage model riêng sau khi tokenizer coverage, truncation policy và GPU
-được kiểm tra.
+Data/window artifacts không được gọi là embedding. Smoke stage chỉ kiểm tra
+embedding trong bộ nhớ và không persist vector. Full embedding chỉ được tạo ở
+stage model riêng sau khi smoke contract và GPU được kiểm tra.
