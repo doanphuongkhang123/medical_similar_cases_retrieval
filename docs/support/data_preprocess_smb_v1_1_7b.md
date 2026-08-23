@@ -17,6 +17,7 @@ raw XLSX
   -> SMB timeline selection theo discharge cutoff
   -> official smb_utils serialization audit
   -> tokenizer audit tối đa 3.300 token
+  -> demographics + maximal recent-event suffix selection
   -> [bước sau] SMB-v1_Qwen3-1.7b_multi-objective embedding
 ```
 
@@ -148,6 +149,26 @@ Kết quả này loại trừ policy chỉ giữ toàn bộ current visit rồi 
 nhất, vì hơn một phần ba current visits tự thân đã quá dài. Bước inference phải
 dùng chunking hoặc selection ở event boundary và ghi rõ cách gom embedding.
 
+Pipeline chọn phương án một window/visit để giữ đúng contract last-token
+pooling của hướng dẫn chính thức: luôn giữ demographics, sau đó chọn suffix lớn
+nhất của các source event gần nhất sao cho serialization không quá 3.300 token.
+Mỗi candidate được re-serialize, nên không cắt giữa token hoặc giữa một event.
+Kết quả đủ 3.500 visit:
+
+- 2.111 giữ nguyên full history; 1.389 cần recent-event selection;
+- p95 window length 3.298, max 3.300 token;
+- 2.300 giữ đủ current-visit events; 1.200 giữ một phần recent events;
+- không visit nào mất toàn bộ current clinical events;
+- median event retention 100%; p05 30,26%; current-event p05 36,76%.
+
+`window_selection.parquet` chỉ lưu selection boundary, counts và hash. Inference
+dựng lại input từ một bản `common/events.parquet`; không lưu serialized text,
+token IDs hoặc một events table thứ hai.
+
+Revision `smb_utils` pin hiện serialize theo ngày/category nhưng không chèn các
+XML delimiter được mô tả trong paper. Pipeline giữ nguyên output của formatter
+chính thức và không tự thêm token ngoài implementation được phát hành.
+
 Giới hạn 3.300 lấy từ `tokenizer_config.json` của checkpoint và max sequence
 length tác giả công bố trong paper. Giới hạn 4.096 thuộc model
 `smb-v1-1.7B` cũ, không phải checkpoint Qwen3 multi-objective hiện hành.
@@ -192,6 +213,7 @@ token-length audit:
 ```bash
 ./run_smb_tokenizer_download_server.sh
 ./run_smb_token_audit_server.sh
+./run_smb_window_selection_server.sh
 ```
 
 Downloader dùng allow-list, từ chối weight extensions và chỉ đổi staging
@@ -232,8 +254,11 @@ SMB_SERIALIZATION_MAX_TARGETS=20 \
     ├── serialization/
         ├── serialization_audit.parquet
         └── manifest.json
-    └── tokenization/
+    ├── tokenization/
         ├── token_length_audit.parquet
+        └── manifest.json
+    └── window_selection/
+        ├── window_selection.parquet
         └── manifest.json
 ```
 

@@ -33,6 +33,11 @@
   32.490 token; 1.389/3.500 (39,69%) vượt giới hạn. Riêng target visit cộng
   demographics có 1.200/3.500 (34,29%) vượt giới hạn. Audit không truncation,
   không lưu serialized text/token IDs và không dùng GPU/model weights.
+- Recent-event window selection đã hoàn tất: 2.111 visit giữ nguyên full
+  history, 1.389 visit chọn suffix; mọi window ≤3.300 token (p95 3.298, max
+  3.300). Có 2.300 visit giữ toàn bộ current-visit events; 1.200 visit giữ một
+  phần recent events, nhưng không visit nào mất toàn bộ current clinical events.
+  Selection plan không nhân bản common events.
 - Clinical note: đã embed đủ 3.500 visit.
 - Image manifest: 1.000 bệnh nhân; 999 bệnh nhân có image embedding.
 - Image embeddings hợp lệ: CT 3.322 × 512-D, MRI 3.904 × 768-D,
@@ -72,8 +77,8 @@
 
 ## Chưa triển khai/chưa chốt
 
-- Chốt policy chunking/truncation theo event boundary trước model inference;
-  recency-only không đủ vì 1.200 target visit tự thân đã vượt 3.300 token.
+- Tải checkpoint weights và chạy smoke inference sau khi inspect custom model
+  code; embedding dùng last-token pooling theo hướng dẫn chính thức.
 - Review mapping local medicine/lab/procedure sang standard terminology để
   giảm domain shift; không chặn SMB data-only vì model nhận MEDS text code.
 - Context Clues tạm dừng đến khi checkpoint được cấp quyền.

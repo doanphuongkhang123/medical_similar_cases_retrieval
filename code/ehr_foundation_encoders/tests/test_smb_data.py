@@ -20,6 +20,7 @@ from ehr_foundation_encoders.smb import (
     build_target_meds,
 )
 from ehr_foundation_encoders.tokenization import audit_smb_token_lengths
+from ehr_foundation_encoders.windowing import build_smb_window_selection
 
 
 class SmbDataPipelineTest(unittest.TestCase):
@@ -141,8 +142,14 @@ class SmbDataPipelineTest(unittest.TestCase):
             def __len__(self) -> int:
                 return 100
 
-            def __call__(self, texts: list[str], **_: object) -> dict[str, list[list[int]]]:
-                return {"input_ids": [[1] * len(text.split()) for text in texts]}
+            def __call__(self, texts: object, **_: object) -> dict[str, object]:
+                if isinstance(texts, str):
+                    return {"input_ids": [1] * len(texts.split())}
+                return {
+                    "input_ids": [
+                        [1] * len(text.split()) for text in texts  # type: ignore[union-attr]
+                    ]
+                }
 
         def fake_formatter(frame: pd.DataFrame, **_: object) -> str:
             return " ".join(frame["code"].astype(str))
@@ -150,6 +157,9 @@ class SmbDataPipelineTest(unittest.TestCase):
         tokenizer_root = self.root / "tokenizer"
         tokenizer_root.mkdir()
         (tokenizer_root / "tokenizer_config.json").write_text("{}")
+        (tokenizer_root / "tokenizer_manifest.json").write_text(
+            json.dumps({"resolved_revision": "synthetic-test"})
+        )
         output = self.root / "tokenization"
         manifest = audit_smb_token_lengths(
             events,
@@ -175,6 +185,26 @@ class SmbDataPipelineTest(unittest.TestCase):
         self.assertTrue((audit["full_token_count"] >= audit["current_plus_demographics_token_count"]).all())
         self.assertFalse(manifest["policy"]["token_ids_persisted"])
         self.assertFalse((output / "token_ids.parquet").exists())
+
+        window_output = self.root / "window_selection"
+        window_manifest = build_smb_window_selection(
+            events=events,
+            targets=targets,
+            token_audit=audit,
+            tokenizer=FakeTokenizer(),
+            formatter=fake_formatter,
+            output_root=window_output,
+            tokenizer_root=tokenizer_root,
+            common_root=common,
+            token_audit_root=output,
+            max_length=4,
+        )
+        selection = pd.read_parquet(window_output / "window_selection.parquet")
+        self.assertEqual(len(selection), 3)
+        self.assertTrue((selection["selected_token_count"] <= 4).all())
+        self.assertGreaterEqual(window_manifest["counts"]["selection_applied"], 1)
+        self.assertFalse(window_manifest["policy"]["serialized_text_persisted"])
+        self.assertFalse((window_output / "serialized_text.jsonl").exists())
 
 
 if __name__ == "__main__":

@@ -18,6 +18,7 @@ Chạy trên lab server:
 ./run_smb_serialization_audit_server.sh
 ./run_smb_tokenizer_download_server.sh
 ./run_smb_token_audit_server.sh
+./run_smb_window_selection_server.sh
 ```
 
 Output:
@@ -37,8 +38,11 @@ Output:
     ├── serialization/
         ├── serialization_audit.parquet
         └── manifest.json
-    └── tokenization/
+    ├── tokenization/
         ├── token_length_audit.parquet
+        └── manifest.json
+    └── window_selection/
+        ├── window_selection.parquet
         └── manifest.json
 ```
 
@@ -51,6 +55,11 @@ và SHA-256. Xem tài liệu chi tiết tại
 Tokenizer-only downloader dùng staging directory và chỉ publish artifact sau
 khi tải/validate đủ file. Nó không tải `model.safetensors`. Tài khoản Hugging
 Face trên server phải được duyệt gated checkpoint trước.
+
+`window_selection.parquet` không sao chép events. Mỗi row lưu điểm bắt đầu của
+suffix event gần nhất để dựng lại input từ `common/events.parquet`. Tất cả 3.500
+window đều không quá 3.300 token; 2.111 giữ nguyên full history và 1.389 cần
+selection. Không current visit nào bị loại hết clinical events.
 
 Kiểm thử:
 

@@ -63,6 +63,10 @@
   1.200 target visits cộng demographics cũng vượt giới hạn. Vì vậy chỉ lấy
   lịch sử gần nhất chưa đủ cho mọi target; cần policy chunking/truncation giữ
   nguyên event boundary trước inference.
+- Pre-inference policy đã chốt: demographics cộng maximal suffix của các event
+  gần nhất, chọn ở source-event boundary rồi re-serialize bằng `smb_utils`.
+  Selection plan chỉ lưu `first_retained_event_order_within_patient` cùng audit
+  counts/hash; events vẫn chỉ có một bản trong `common/events.parquet`.
 
 ## Image
 
