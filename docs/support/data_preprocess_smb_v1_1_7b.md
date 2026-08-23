@@ -121,12 +121,13 @@ dữ liệu vừa tăng bề mặt dữ liệu nhạy cảm. Audit chỉ ghi s�
 dòng, trạng thái non-empty và SHA-256 của serialization.
 
 Tokenizer của gated checkpoint đã được tải trên server bằng tài khoản được cấp
-quyền; model weights chưa được tải. Token-length audit đã được triển khai nhưng
-chưa chạy trên dữ liệu thật vì Transformers cảnh báo regex của tokenizer cần
-được xác minh trước. Không thay tokenizer SMB bằng tokenizer Qwen gốc vì
+quyền; model weights chưa được tải. Checkpoint khai báo `Qwen2Tokenizer`.
+Cảnh báo Mistral regex của Transformers đã được kiểm tra bằng chuỗi giả lập và
+xác nhận là false-positive khi load tokenizer Qwen từ local. Loader đặt rõ
+`fix_mistral_regex=False`; không thay tokenizer SMB bằng tokenizer Qwen gốc vì
 checkpoint có `added_tokens.json` riêng.
 
-Sau khi cảnh báo regex được xử lý, audit đo riêng:
+Audit đo riêng:
 
 - token count của toàn bộ longitudinal history đến cutoff;
 - token count của target visit cộng demographics;
@@ -135,6 +136,17 @@ Sau khi cảnh báo regex được xử lý, audit đo riêng:
 Audit không truncation và không lưu serialized text/token IDs. Kết quả quyết
 định chính sách event-aware recency; không được âm thầm dùng right truncation
 nếu nó cắt mất visit hiện tại.
+
+Audit đủ 3.500 target trên `vaipe_aiotlab` đã hoàn tất:
+
+- full history: median 2.618,5; p95 10.924,2; max 32.490 token;
+- 1.389/3.500 full histories (39,69%) vượt 3.300 token;
+- target visit cộng demographics: median 2.355,5; p95 9.259,2; max 32.490;
+- 1.200/3.500 current views (34,29%) vượt 3.300 token.
+
+Kết quả này loại trừ policy chỉ giữ toàn bộ current visit rồi thêm history gần
+nhất, vì hơn một phần ba current visits tự thân đã quá dài. Bước inference phải
+dùng chunking hoặc selection ở event boundary và ghi rõ cách gom embedding.
 
 Giới hạn 3.300 lấy từ `tokenizer_config.json` của checkpoint và max sequence
 length tác giả công bố trong paper. Giới hạn 4.096 thuộc model
@@ -174,8 +186,8 @@ Chạy serialization audit cho toàn bộ target:
 ./run_smb_serialization_audit_server.sh
 ```
 
-Để tái tạo tokenizer artifact, tải **chỉ tokenizer/config**; chỉ chạy
-token-length audit sau khi cảnh báo regex đã được xử lý:
+Để tái tạo tokenizer artifact, tải **chỉ tokenizer/config**, sau đó chạy
+token-length audit:
 
 ```bash
 ./run_smb_tokenizer_download_server.sh
@@ -184,6 +196,8 @@ token-length audit sau khi cảnh báo regex đã được xử lý:
 
 Downloader dùng allow-list, từ chối weight extensions và chỉ đổi staging
 directory thành artifact chính thức sau khi download/validation hoàn tất.
+Token audit manifest ghi path và SHA-256 của raw workbook, common manifest,
+events, targets và toàn bộ tokenizer files để tái lập lineage.
 
 Smoke audit một số target:
 

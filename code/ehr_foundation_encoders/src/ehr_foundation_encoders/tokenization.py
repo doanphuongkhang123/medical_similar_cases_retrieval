@@ -17,6 +17,7 @@ import pandas as pd
 from .common import sha256_file, write_json
 from .smb import (
     MEDS_COLUMNS,
+    SMB_FIX_MISTRAL_REGEX,
     SMB_MAX_SEQUENCE_LENGTH,
     SMB_MODEL_ID,
     SMB_MODEL_REVISION,
@@ -43,6 +44,7 @@ def _token_lengths(tokenizer: Any, texts: list[str]) -> list[int]:
         padding=False,
         return_attention_mask=False,
         return_token_type_ids=False,
+        verbose=False,
     )
     input_ids = encoded["input_ids"]
     return [len(ids) for ids in input_ids]
@@ -86,6 +88,7 @@ def audit_smb_token_lengths(
     formatter: Callable[..., str],
     output_root: Path,
     tokenizer_root: Path,
+    common_root: Path,
     max_length: int = SMB_MAX_SEQUENCE_LENGTH,
     batch_size: int = 16,
     overwrite: bool = False,
@@ -192,6 +195,17 @@ def audit_smb_token_lengths(
         for path in tokenizer_root.rglob("*")
         if path.is_file() and ".cache" not in path.parts
     ]
+    common_manifest_path = common_root / "manifest.json"
+    common_events_path = common_root / "events.parquet"
+    common_targets_path = common_root / "targets.parquet"
+    for input_path in (
+        common_manifest_path,
+        common_events_path,
+        common_targets_path,
+    ):
+        if not input_path.is_file():
+            raise FileNotFoundError(f"Missing token audit input: {input_path}")
+    common_manifest = json.loads(common_manifest_path.read_text(encoding="utf-8"))
     manifest: dict[str, Any] = {
         "schema_version": 1,
         "stage": "smb_tokenizer_length_audit",
@@ -201,10 +215,26 @@ def audit_smb_token_lengths(
         ),
         "max_length": max_length,
         "smb_utils_revision": SMB_UTILS_REVISION,
+        "inputs": {
+            "common_manifest": {
+                "path": str(common_manifest_path.resolve()),
+                "sha256": sha256_file(common_manifest_path),
+            },
+            "common_events": {
+                "path": str(common_events_path.resolve()),
+                "sha256": sha256_file(common_events_path),
+            },
+            "common_targets": {
+                "path": str(common_targets_path.resolve()),
+                "sha256": sha256_file(common_targets_path),
+            },
+            "raw_source": common_manifest.get("lineage", {}),
+        },
         "tokenizer": {
             "class": tokenizer.__class__.__name__,
             "vocab_size": int(len(tokenizer)),
             "reported_model_max_length": int(tokenizer.model_max_length),
+            "fix_mistral_regex": SMB_FIX_MISTRAL_REGEX,
             "root": str(tokenizer_root.resolve()),
             "manifest_sha256": (
                 sha256_file(tokenizer_manifest_path)

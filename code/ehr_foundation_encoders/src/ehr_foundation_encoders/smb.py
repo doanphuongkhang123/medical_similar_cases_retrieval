@@ -15,6 +15,7 @@ SMB_UTILS_REVISION = "4f963e124a940c2ddbc10f50a7448a6e20654555"
 SMB_MODEL_ID = "standardmodelbio/SMB-v1_Qwen3-1.7b_multi-objective"
 SMB_MODEL_REVISION = "81a889a17c84160eaab4c975c70e451482bc9e56"
 SMB_MAX_SEQUENCE_LENGTH = 3300
+SMB_FIX_MISTRAL_REGEX = False
 
 
 def validate_common_input(events: pd.DataFrame, targets: pd.DataFrame) -> None:

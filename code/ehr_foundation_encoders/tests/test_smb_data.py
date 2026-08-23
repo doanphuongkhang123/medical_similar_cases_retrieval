@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from ehr_foundation_encoders.common import build_common_dataset
 from ehr_foundation_encoders.smb import (
+    SMB_FIX_MISTRAL_REGEX,
     SMB_MAX_SEQUENCE_LENGTH,
     audit_smb_serialization,
     build_smb_preflight,
@@ -157,13 +158,18 @@ class SmbDataPipelineTest(unittest.TestCase):
             fake_formatter,
             output,
             tokenizer_root,
+            common,
             max_length=4,
             batch_size=2,
         )
         audit = pd.read_parquet(output / "token_length_audit.parquet")
         self.assertEqual(SMB_MAX_SEQUENCE_LENGTH, 3300)
+        self.assertIs(SMB_FIX_MISTRAL_REGEX, False)
         self.assertEqual(manifest["max_length"], 4)
+        self.assertIs(manifest["tokenizer"]["fix_mistral_regex"], False)
         self.assertEqual(manifest["tokenizer"]["reported_model_max_length"], 3300)
+        self.assertEqual(manifest["inputs"]["raw_source"], {})
+        self.assertTrue(manifest["inputs"]["common_events"]["sha256"])
         self.assertEqual(len(audit), 3)
         self.assertGreaterEqual(manifest["counts"]["full_history_over_limit"], 1)
         self.assertTrue((audit["full_token_count"] >= audit["current_plus_demographics_token_count"]).all())

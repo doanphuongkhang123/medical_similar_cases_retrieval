@@ -11,8 +11,8 @@
 3. CT/MRI/XQ → image encoder tương ứng → series-level image embedding.
 4. Structured EHR → common MEDS-compatible events →
    `SMB-v1_Qwen3-1.7b_multi-objective` → frozen visit embedding. Data-only và
-   official `smb_utils` serialization audit đã chạy trực tiếp từ workbook raw;
-   tokenizer/model inference chưa chạy.
+   official `smb_utils` serialization/token-length audit đã chạy trực tiếp từ
+   workbook raw; model inference chưa chạy.
 
 ## Dữ liệu và embedding
 
@@ -26,9 +26,13 @@
 - Context Clues data-only cũ vẫn ở `data/context_clues/raw_pipeline_v1/`, nhưng
   model path tạm dừng vì checkpoint gated và không phải input của SMB pipeline.
 - SMB tokenizer của checkpoint pin đã tải thành công trên server mà không tải
-  model weights. Tokenizer và paper cùng khai báo max sequence length 3.300;
-  token audit chưa chạy vì Transformers cảnh báo regex tokenizer cần được xác
-  minh trước khi dùng trên dữ liệu thật.
+  model weights. Tokenizer và paper cùng khai báo max sequence length 3.300.
+  Cảnh báo regex được xác nhận là false-positive của Transformers cho tokenizer
+  Qwen local; loader pin `fix_mistral_regex=False`.
+- Token audit đủ 3.500 visit: full history median 2.618,5, p95 10.924,2, max
+  32.490 token; 1.389/3.500 (39,69%) vượt giới hạn. Riêng target visit cộng
+  demographics có 1.200/3.500 (34,29%) vượt giới hạn. Audit không truncation,
+  không lưu serialized text/token IDs và không dùng GPU/model weights.
 - Clinical note: đã embed đủ 3.500 visit.
 - Image manifest: 1.000 bệnh nhân; 999 bệnh nhân có image embedding.
 - Image embeddings hợp lệ: CT 3.322 × 512-D, MRI 3.904 × 768-D,
@@ -68,9 +72,8 @@
 
 ## Chưa triển khai/chưa chốt
 
-- Xác minh cách xử lý cảnh báo regex của tokenizer checkpoint, sau đó chạy
-  tokenizer audit đủ 3.500 visit, đo tỷ lệ vượt 3.300 token và chốt
-  recency/truncation policy trước model inference.
+- Chốt policy chunking/truncation theo event boundary trước model inference;
+  recency-only không đủ vì 1.200 target visit tự thân đã vượt 3.300 token.
 - Review mapping local medicine/lab/procedure sang standard terminology để
   giảm domain shift; không chặn SMB data-only vì model nhận MEDS text code.
 - Context Clues tạm dừng đến khi checkpoint được cấp quyền.

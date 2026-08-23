@@ -14,7 +14,10 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from ehr_foundation_encoders.tokenization import audit_smb_token_lengths
-from ehr_foundation_encoders.smb import SMB_MAX_SEQUENCE_LENGTH
+from ehr_foundation_encoders.smb import (
+    SMB_FIX_MISTRAL_REGEX,
+    SMB_MAX_SEQUENCE_LENGTH,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -43,6 +46,7 @@ def main() -> None:
         args.tokenizer_root,
         local_files_only=True,
         trust_remote_code=False,
+        fix_mistral_regex=SMB_FIX_MISTRAL_REGEX,
     )
     events = pd.read_parquet(args.common_root / "events.parquet")
     targets = pd.read_parquet(args.common_root / "targets.parquet")
@@ -53,6 +57,7 @@ def main() -> None:
         formatter=process_ehr_info,
         output_root=args.output_root,
         tokenizer_root=args.tokenizer_root,
+        common_root=args.common_root,
         max_length=args.max_length,
         batch_size=args.batch_size,
         overwrite=args.overwrite,

@@ -4,7 +4,11 @@ Pipeline data-only dùng chung cho structured EHR foundation models. Phiên bả
 hiện tại triển khai adapter cho
 `standardmodelbio/SMB-v1_Qwen3-1.7b_multi-objective`. Data-only đã hoàn tất;
 tokenizer đã tải và token audit dùng giới hạn huấn luyện 3.300 token. Audit dữ
-liệu thật đang chờ xác minh cảnh báo regex của tokenizer.
+liệu thật chạy bằng tokenizer Qwen với `fix_mistral_regex=False`.
+
+Audit đủ 3.500 target đã hoàn tất: 1.389 full histories (39,69%) và 1.200
+target visits cộng demographics (34,29%) vượt 3.300 token. Pipeline chưa áp
+dụng truncation và chưa chạy model inference.
 
 Chạy trên lab server:
 

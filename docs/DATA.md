@@ -59,6 +59,10 @@
   weights hoặc embeddings. Checkpoint được huấn luyện với max sequence length
   3.300 token; token-length audit theo đúng giới hạn này phải chạy trước
   inference. Audit chỉ lưu counts/hash, không lưu text hoặc token IDs.
+- Token audit đủ 3.500 target đã hoàn tất: 1.389 full histories vượt giới hạn;
+  1.200 target visits cộng demographics cũng vượt giới hạn. Vì vậy chỉ lấy
+  lịch sử gần nhất chưa đủ cho mọi target; cần policy chunking/truncation giữ
+  nguyên event boundary trước inference.
 
 ## Image
 
