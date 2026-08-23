@@ -1,8 +1,10 @@
 # Structured EHR foundation encoders
 
 Pipeline data-only dùng chung cho structured EHR foundation models. Phiên bản
-hiện tại triển khai adapter cho `standardmodelbio/SMB-v1-1.7B` và dừng trước
-tokenizer/model inference.
+hiện tại triển khai adapter cho
+`standardmodelbio/SMB-v1_Qwen3-1.7b_multi-objective`. Data-only đã hoàn tất;
+tokenizer đã tải và token audit dùng giới hạn huấn luyện 3.300 token. Audit dữ
+liệu thật đang chờ xác minh cảnh báo regex của tokenizer.
 
 Chạy trên lab server:
 
@@ -10,6 +12,8 @@ Chạy trên lab server:
 ./run_smb_data_server.sh
 ./install_smb_utils_server.sh
 ./run_smb_serialization_audit_server.sh
+./run_smb_tokenizer_download_server.sh
+./run_smb_token_audit_server.sh
 ```
 
 Output:
@@ -26,8 +30,11 @@ Output:
 └── adapters/smb_v1_1_7b/
     ├── target_preflight.parquet
     ├── manifest.json
-    └── serialization/
+    ├── serialization/
         ├── serialization_audit.parquet
+        └── manifest.json
+    └── tokenization/
+        ├── token_length_audit.parquet
         └── manifest.json
 ```
 
@@ -36,6 +43,10 @@ một bản events thứ hai. Mỗi target visit lấy history cùng bệnh nhâ
 điểm xuất viện. Serialized clinical text không được lưu; audit chỉ giữ counts
 và SHA-256. Xem tài liệu chi tiết tại
 `docs/support/data_preprocess_smb_v1_1_7b.md`.
+
+Tokenizer-only downloader dùng staging directory và chỉ publish artifact sau
+khi tải/validate đủ file. Nó không tải `model.safetensors`. Tài khoản Hugging
+Face trên server phải được duyệt gated checkpoint trước.
 
 Kiểm thử:
 

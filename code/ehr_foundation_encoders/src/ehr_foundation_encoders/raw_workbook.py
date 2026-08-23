@@ -16,7 +16,12 @@ from .common import (
     validate_structured_tables,
     write_json,
 )
-from .smb import SMB_UTILS_REVISION, build_smb_preflight
+from .smb import (
+    SMB_MODEL_ID,
+    SMB_MODEL_REVISION,
+    SMB_UTILS_REVISION,
+    build_smb_preflight,
+)
 
 
 def _load_raw_builders(preprocessing_root: Path) -> tuple[Any, Any]:
@@ -123,7 +128,8 @@ def prepare_smb_raw_dataset(
     adapter_manifest = {
         "schema_version": 1,
         "stage": "smb_meds_adapter_preflight",
-        "model": "standardmodelbio/SMB-v1-1.7B",
+        "model": SMB_MODEL_ID,
+        "model_revision": SMB_MODEL_REVISION,
         "common_events": str((common_root / "events.parquet").resolve()),
         "common_targets": str((common_root / "targets.parquet").resolve()),
         "smb_utils_revision": SMB_UTILS_REVISION,

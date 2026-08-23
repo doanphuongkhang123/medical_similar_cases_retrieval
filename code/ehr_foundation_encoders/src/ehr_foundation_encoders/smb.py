@@ -12,6 +12,9 @@ from .common import write_json
 
 MEDS_COLUMNS = ("subject_id", "time", "code", "table", "numeric_value", "text_value", "unit")
 SMB_UTILS_REVISION = "4f963e124a940c2ddbc10f50a7448a6e20654555"
+SMB_MODEL_ID = "standardmodelbio/SMB-v1_Qwen3-1.7b_multi-objective"
+SMB_MODEL_REVISION = "81a889a17c84160eaab4c975c70e451482bc9e56"
+SMB_MAX_SEQUENCE_LENGTH = 3300
 
 
 def validate_common_input(events: pd.DataFrame, targets: pd.DataFrame) -> None:
@@ -52,7 +55,7 @@ def build_target_meds(events: pd.DataFrame, target: pd.Series | Any) -> pd.DataF
     return selected
 
 
-def _events_by_patient(events: pd.DataFrame) -> dict[str, pd.DataFrame]:
+def group_events_by_patient(events: pd.DataFrame) -> dict[str, pd.DataFrame]:
     prepared = events.copy()
     prepared["patient_id"] = prepared["patient_id"].astype(str)
     prepared["time"] = pd.to_datetime(prepared["time"], errors="coerce")
@@ -66,7 +69,7 @@ def _events_by_patient(events: pd.DataFrame) -> dict[str, pd.DataFrame]:
 
 def build_smb_preflight(events: pd.DataFrame, targets: pd.DataFrame) -> pd.DataFrame:
     validate_common_input(events, targets)
-    patient_events = _events_by_patient(events)
+    patient_events = group_events_by_patient(events)
     rows: list[dict[str, Any]] = []
     for target in targets.sort_values("target_order").itertuples(index=False):
         selected = build_target_meds(patient_events.get(str(target.patient_id), events.iloc[0:0]), target)
@@ -105,7 +108,7 @@ def audit_smb_serialization(
     ordered = targets.sort_values("target_order")
     if max_targets is not None:
         ordered = ordered.head(max_targets)
-    patient_events = _events_by_patient(events)
+    patient_events = group_events_by_patient(events)
     rows: list[dict[str, Any]] = []
     for target in ordered.itertuples(index=False):
         selected = build_target_meds(patient_events.get(str(target.patient_id), events.iloc[0:0]), target)

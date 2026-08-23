@@ -3,9 +3,9 @@
 ## Mục tiêu
 
 Pipeline chuyển workbook EHR raw thành input MEDS-compatible cho
-`standardmodelbio/SMB-v1-1.7B`, nhưng chưa tải tokenizer, model weights hoặc
-chạy inference. Retrieval unit vẫn là `visit_id`: mỗi target visit dùng toàn bộ
-lịch sử structured EHR của cùng bệnh nhân đến `discharge_time` của visit đó.
+`standardmodelbio/SMB-v1_Qwen3-1.7b_multi-objective`, nhưng chưa tải model
+weights hoặc chạy inference. Retrieval unit vẫn là `visit_id`: mỗi target visit
+dùng toàn bộ lịch sử structured EHR của cùng bệnh nhân đến `discharge_time`.
 
 Luồng xử lý:
 
@@ -16,8 +16,8 @@ raw XLSX
   -> common/targets.parquet (một target mỗi visit)
   -> SMB timeline selection theo discharge cutoff
   -> official smb_utils serialization audit
-  -> [bước sau] tokenizer audit tối đa 4.096 token
-  -> [bước sau] SMB-v1-1.7B embedding
+  -> tokenizer audit tối đa 3.300 token
+  -> [bước sau] SMB-v1_Qwen3-1.7b_multi-objective embedding
 ```
 
 ## Lineage và phạm vi
@@ -109,20 +109,43 @@ Pipeline pin `smb-utils` tại revision:
 4f963e124a940c2ddbc10f50a7448a6e20654555
 ```
 
+Checkpoint SMB được pin tại revision:
+
+```text
+81a889a17c84160eaab4c975c70e451482bc9e56
+```
+
 `process_ehr_info` được gọi với `category_column="table"`, demographics bật và
 `end_time=cutoff_time`. Serialized clinical text không được lưu lại vì vừa lặp
 dữ liệu vừa tăng bề mặt dữ liệu nhạy cảm. Audit chỉ ghi số event, số ký tự, số
 dòng, trạng thái non-empty và SHA-256 của serialization.
 
-Token-length audit chưa chạy ở stage này vì cần tokenizer của model. Trước
-inference phải đo đủ mọi target và chốt chính sách giữ tối đa 4.096 token; không
-được âm thầm dùng right truncation nếu nó cắt mất visit hiện tại.
+Tokenizer của gated checkpoint đã được tải trên server bằng tài khoản được cấp
+quyền; model weights chưa được tải. Token-length audit đã được triển khai nhưng
+chưa chạy trên dữ liệu thật vì Transformers cảnh báo regex của tokenizer cần
+được xác minh trước. Không thay tokenizer SMB bằng tokenizer Qwen gốc vì
+checkpoint có `added_tokens.json` riêng.
+
+Sau khi cảnh báo regex được xử lý, audit đo riêng:
+
+- token count của toàn bộ longitudinal history đến cutoff;
+- token count của target visit cộng demographics;
+- số token vượt 3.300 và số target vượt giới hạn ở mỗi view.
+
+Audit không truncation và không lưu serialized text/token IDs. Kết quả quyết
+định chính sách event-aware recency; không được âm thầm dùng right truncation
+nếu nó cắt mất visit hiện tại.
+
+Giới hạn 3.300 lấy từ `tokenizer_config.json` của checkpoint và max sequence
+length tác giả công bố trong paper. Giới hạn 4.096 thuộc model
+`smb-v1-1.7B` cũ, không phải checkpoint Qwen3 multi-objective hiện hành.
 
 Nguồn contract chính thức:
 
 - https://standardmodel.bio/your-data.html
 - https://github.com/standardmodelbio/smb-utils
-- https://huggingface.co/standardmodelbio/SMB-v1-1.7B
+- https://huggingface.co/standardmodelbio/SMB-v1_Qwen3-1.7b_multi-objective
+- https://arxiv.org/abs/2601.22128
 
 ## Cách chạy trên server
 
@@ -150,6 +173,17 @@ Chạy serialization audit cho toàn bộ target:
 ```bash
 ./run_smb_serialization_audit_server.sh
 ```
+
+Để tái tạo tokenizer artifact, tải **chỉ tokenizer/config**; chỉ chạy
+token-length audit sau khi cảnh báo regex đã được xử lý:
+
+```bash
+./run_smb_tokenizer_download_server.sh
+./run_smb_token_audit_server.sh
+```
+
+Downloader dùng allow-list, từ chối weight extensions và chỉ đổi staging
+directory thành artifact chính thức sau khi download/validation hoàn tất.
 
 Smoke audit một số target:
 
@@ -181,8 +215,11 @@ SMB_SERIALIZATION_MAX_TARGETS=20 \
 └── adapters/smb_v1_1_7b/
     ├── target_preflight.parquet
     ├── manifest.json
-    └── serialization/
+    ├── serialization/
         ├── serialization_audit.parquet
+        └── manifest.json
+    └── tokenization/
+        ├── token_length_audit.parquet
         └── manifest.json
 ```
 

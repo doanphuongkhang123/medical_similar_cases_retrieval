@@ -40,6 +40,8 @@
 
 ## SMB structured EHR foundation encoder
 
+- Checkpoint hiện hành:
+  `standardmodelbio/SMB-v1_Qwen3-1.7b_multi-objective`.
 - Input gốc bắt buộc vẫn là workbook
   `/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx` với
   SHA-256 ghi trong manifest; không đọc artifact Context Clues hoặc
@@ -54,7 +56,9 @@
 - Local lab/medicine/procedure labels không được giả là standard vocabulary;
   mapping review nằm trong `common/concept_mappings.csv`.
 - Data-only stage không chứa serialized clinical text, token IDs, model
-  weights hoặc embeddings. Token-length audit 4.096 phải chạy trước inference.
+  weights hoặc embeddings. Checkpoint được huấn luyện với max sequence length
+  3.300 token; token-length audit theo đúng giới hạn này phải chạy trước
+  inference. Audit chỉ lưu counts/hash, không lưu text hoặc token IDs.
 
 ## Image
 

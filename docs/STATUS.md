@@ -9,9 +9,10 @@
 1. EHR structured → visit graph → 3-stage pretrained GNN → EHR embedding.
 2. Clinical note → Qwen3-Embedding-8B → note embedding 4096-D và 256-D.
 3. CT/MRI/XQ → image encoder tương ứng → series-level image embedding.
-4. Structured EHR → common MEDS-compatible events → SMB-v1-1.7B → frozen
-   visit embedding. Data-only và official `smb_utils` serialization audit đã
-   chạy trực tiếp từ workbook raw; tokenizer/model inference chưa chạy.
+4. Structured EHR → common MEDS-compatible events →
+   `SMB-v1_Qwen3-1.7b_multi-objective` → frozen visit embedding. Data-only và
+   official `smb_utils` serialization audit đã chạy trực tiếp từ workbook raw;
+   tokenizer/model inference chưa chạy.
 
 ## Dữ liệu và embedding
 
@@ -24,6 +25,10 @@
   được lưu.
 - Context Clues data-only cũ vẫn ở `data/context_clues/raw_pipeline_v1/`, nhưng
   model path tạm dừng vì checkpoint gated và không phải input của SMB pipeline.
+- SMB tokenizer của checkpoint pin đã tải thành công trên server mà không tải
+  model weights. Tokenizer và paper cùng khai báo max sequence length 3.300;
+  token audit chưa chạy vì Transformers cảnh báo regex tokenizer cần được xác
+  minh trước khi dùng trên dữ liệu thật.
 - Clinical note: đã embed đủ 3.500 visit.
 - Image manifest: 1.000 bệnh nhân; 999 bệnh nhân có image embedding.
 - Image embeddings hợp lệ: CT 3.322 × 512-D, MRI 3.904 × 768-D,
@@ -63,7 +68,8 @@
 
 ## Chưa triển khai/chưa chốt
 
-- Chạy SMB tokenizer audit đủ 3.500 visit, đo tỷ lệ vượt 4.096 token và chốt
+- Xác minh cách xử lý cảnh báo regex của tokenizer checkpoint, sau đó chạy
+  tokenizer audit đủ 3.500 visit, đo tỷ lệ vượt 3.300 token và chốt
   recency/truncation policy trước model inference.
 - Review mapping local medicine/lab/procedure sang standard terminology để
   giảm domain shift; không chặn SMB data-only vì model nhận MEDS text code.
