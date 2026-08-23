@@ -1,6 +1,6 @@
 # Project Status
 
-**Cập nhật:** 2026-08-20
+**Cập nhật:** 2026-08-23
 
 **Retrieval unit:** `visit_id`
 
@@ -9,16 +9,21 @@
 1. EHR structured → visit graph → 3-stage pretrained GNN → EHR embedding.
 2. Clinical note → Qwen3-Embedding-8B → note embedding 4096-D và 256-D.
 3. CT/MRI/XQ → image encoder tương ứng → series-level image embedding.
-4. Structured EHR → OMOP-standard events → Context Clues GPT-base-4096 →
-   frozen visit embedding. Data-only đã chạy lại trực tiếp từ workbook raw;
-   artifact embedding chưa chạy vì concept map/checkpoint gated.
+4. Structured EHR → common MEDS-compatible events → SMB-v1-1.7B → frozen
+   visit embedding. Data-only và official `smb_utils` serialization audit đã
+   chạy trực tiếp từ workbook raw; tokenizer/model inference chưa chạy.
 
 ## Dữ liệu và embedding
 
 - EHR: 3.500 visit thuộc 3.095 bệnh nhân.
-- Context Clues raw data-only: 734.370 structured event, 18.861 local concept;
-  output tại `data/context_clues/raw_pipeline_v1/`. Manifest xác nhận không
-  tiêu thụ snapshot `data/ehr_preprocessed/`.
+- SMB raw data-only: 734.370 clinical event, 3.095 demographic event, 18.861
+  local concept và 3.500 target visit; output tại
+  `data/ehr_foundation_encoders/raw_pipeline_v1/`. Cả 3.500 target serialize
+  non-empty bằng `smb_utils` revision
+  `4f963e124a940c2ddbc10f50a7448a6e20654555`; serialized clinical text không
+  được lưu.
+- Context Clues data-only cũ vẫn ở `data/context_clues/raw_pipeline_v1/`, nhưng
+  model path tạm dừng vì checkpoint gated và không phải input của SMB pipeline.
 - Clinical note: đã embed đủ 3.500 visit.
 - Image manifest: 1.000 bệnh nhân; 999 bệnh nhân có image embedding.
 - Image embeddings hợp lệ: CT 3.322 × 512-D, MRI 3.904 × 768-D,
@@ -58,7 +63,11 @@
 
 ## Chưa triển khai/chưa chốt
 
-- Review concept map local code → OMOP và chạy Context Clues đủ 3.500 visit.
+- Chạy SMB tokenizer audit đủ 3.500 visit, đo tỷ lệ vượt 4.096 token và chốt
+  recency/truncation policy trước model inference.
+- Review mapping local medicine/lab/procedure sang standard terminology để
+  giảm domain shift; không chặn SMB data-only vì model nhận MEDS text code.
+- Context Clues tạm dừng đến khi checkpoint được cấp quyền.
 - Code retrieval v2.
 - Trọng số V1 cuối cùng; expert-review hiện dùng default equal weights và Top 20.
 - Trọng số late fusion/rerank và kích thước shortlist cho V2.

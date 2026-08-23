@@ -13,6 +13,14 @@ slide build, ảnh render hoặc chat archive tại đây.
 - [Context Clues pipeline README](../../code/context_clues/README.md): cách chạy
   data-only, tải checkpoint, materialize mapped events và chạy frozen encoder.
 
+## SMB-v1-1.7B structured-EHR encoder
+
+- [Data preprocessing cho SMB-v1-1.7B](data_preprocess_smb_v1_1_7b.md): mô tả
+  raw lineage, common MEDS schema, terminology policy, visit cutoff,
+  `smb_utils` serialization audit và artifact contract.
+- [SMB pipeline README](../../code/ehr_foundation_encoders/README.md): entry
+  points chạy data-only và official serialization audit trên lab server.
+
 ## Contract chung của project
 
 - [Data contract](../DATA.md)

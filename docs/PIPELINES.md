@@ -30,21 +30,26 @@ clinical_notes.parquet + visits.parquet -> group all sections by visit_id
 
 Source: `code/text_embedding_pipeline/`.
 
-## 4. Context Clues structured-EHR embedding
+## 4. SMB structured-EHR foundation embedding
 
 ```text
 raw/thông tin bệnh án.xlsx
-    -> Context Clues-owned visits + diagnoses + medicines + procedures + observations
-    -> reviewed local-concept to OMOP map
+    -> pipeline-owned visits + diagnoses + medicines + procedures + observations
+    -> one canonical MEDS-compatible event store
     -> chronological patient timeline through target discharge
-    -> Context Clues GPT-base-4096 (frozen)
-    -> last-token 768-D L2-normalized visit embedding
+    -> official smb_utils serialization
+    -> [next] SMB-v1-1.7B tokenizer/model
+    -> [next] one frozen embedding per visit
 ```
 
-Source: `code/context_clues/`. Data trung gian và artifact nằm riêng dưới
-`data/context_clues/raw_pipeline_v1/`. Pipeline không tiêu thụ
-`data/ehr_preprocessed/`, không dựng clinical note/graph. Inference bị chặn nếu
-mapping/tokenizer coverage thấp hoặc một visit không còn clinical token.
+Source: `code/ehr_foundation_encoders/`. Data trung gian và artifact nằm riêng
+dưới `data/ehr_foundation_encoders/raw_pipeline_v1/`. Pipeline không tiêu thụ
+`data/ehr_preprocessed/` hay output Context Clues, không dựng clinical
+note/graph và không nhân bản event table cho mỗi encoder/target. Data-only và
+serialization audit đã hoàn tất; tokenizer/model inference chưa chạy.
+
+Context Clues code/artifact cũ vẫn được giữ để truy vết nhưng model path đang
+tạm dừng do checkpoint gated.
 
 ## Contract chung
 

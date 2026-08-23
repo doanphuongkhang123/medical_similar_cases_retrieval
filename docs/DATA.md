@@ -38,6 +38,24 @@
 - Contract output cuối: đúng một row/visit trong
   `embeddings/gpt-base-4096-clmbr/visit_embeddings.parquet`.
 
+## SMB structured EHR foundation encoder
+
+- Input gốc bắt buộc vẫn là workbook
+  `/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx` với
+  SHA-256 ghi trong manifest; không đọc artifact Context Clues hoặc
+  `data/ehr_preprocessed/`.
+- Data/output riêng:
+  `/mnt/disk4/similar_cases_retrieval/data/ehr_foundation_encoders/raw_pipeline_v1/`.
+- `common/events.parquet` giữ một bản canonical event duy nhất và đồng thời có
+  MEDS columns `subject_id`, `time`, `code`, `table`, `numeric_value`,
+  `text_value`, `unit`.
+- `common/targets.parquet` có đúng một row cho mỗi `visit_id`. Input target là
+  events cùng `patient_id` thỏa `time <= discharge_time` của target visit.
+- Local lab/medicine/procedure labels không được giả là standard vocabulary;
+  mapping review nằm trong `common/concept_mappings.csv`.
+- Data-only stage không chứa serialized clinical text, token IDs, model
+  weights hoặc embeddings. Token-length audit 4.096 phải chạy trước inference.
+
 ## Image
 
 - Đơn vị output mặc định: một embedding cho mỗi source image/volume.
