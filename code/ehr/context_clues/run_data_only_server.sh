@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PIPE=/mnt/disk4/similar_cases_retrieval/code/code/context_clues
+PIPE=/mnt/disk4/similar_cases_retrieval/code/code/ehr/context_clues
 PYTHON=/mnt/disk1/khangdp/conda_envs/scr_env/bin/python
-WORKBOOK="/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx"
-EHR_PREPROCESSING=/mnt/disk4/similar_cases_retrieval/code/code/ehr_graph_embedding/preprocessing
-OUTPUT=/mnt/disk4/similar_cases_retrieval/data/context_clues/raw_pipeline_v1
+WORKBOOK="/mnt/disk4/similar_cases_retrieval/data/ehr/raw/thông tin bệnh án.xlsx"
+EHR_PREPROCESSING=/mnt/disk4/similar_cases_retrieval/code/code/ehr/ehr_graph_embedding/preprocessing
+OUTPUT=/mnt/disk4/similar_cases_retrieval/data/ehr/context_clues/raw_pipeline_v1
 
 args=(
   --workbook "$WORKBOOK"

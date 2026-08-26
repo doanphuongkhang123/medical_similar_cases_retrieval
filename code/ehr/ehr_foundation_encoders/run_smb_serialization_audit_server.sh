@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PIPE=/mnt/disk4/similar_cases_retrieval/code/code/ehr_foundation_encoders
+PIPE=/mnt/disk4/similar_cases_retrieval/code/code/ehr/ehr_foundation_encoders
 PYTHON=/mnt/disk1/khangdp/conda_envs/scr_env/bin/python
-PIPELINE_ROOT=/mnt/disk4/similar_cases_retrieval/data/ehr_foundation_encoders/raw_pipeline_v1
-SMB_UTILS=/mnt/disk4/similar_cases_retrieval/data/ehr_foundation_encoders/runtime/smb-utils
+PIPELINE_ROOT=/mnt/disk4/similar_cases_retrieval/data/ehr/ehr_foundation_encoders/raw_pipeline_v1
+SMB_UTILS=/mnt/disk4/similar_cases_retrieval/data/ehr/ehr_foundation_encoders/runtime/smb-utils
 OUTPUT="$PIPELINE_ROOT/adapters/smb_v1_1_7b/serialization"
 
 if [[ ! -d "$SMB_UTILS/src/smb_utils" ]]; then

@@ -8,7 +8,7 @@ from pathlib import Path
 DEFAULT_DATA_ROOT = Path(
     "/mnt/disk4/similar_cases_retrieval/data"
 )
-DEFAULT_EHR_ROOT = DEFAULT_DATA_ROOT / "ehr_preprocessed/ehr_preprocessed_full"
+DEFAULT_EHR_ROOT = DEFAULT_DATA_ROOT / "ehr/ehr_preprocessed/ehr_preprocessed_full"
 DEFAULT_EHR_EMBEDDINGS = (
     DEFAULT_DATA_ROOT
     / "experiments/retrieval_first_ssl_structured_full_s3_projectorfix_20260815"

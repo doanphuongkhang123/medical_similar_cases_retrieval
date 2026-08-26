@@ -3,7 +3,7 @@
 Pipeline này đọc trực tiếp workbook EHR raw, tự dựng năm bảng structured trong
 thư mục data riêng, rồi chuyển chúng sang input của model
 `StanfordShahLab/gpt-base-4096-clmbr`. Output có đúng một embedding cho mỗi
-`visit_id`. Pipeline không dùng artifact từ `data/ehr_preprocessed/`, không
+`visit_id`. Pipeline không dùng artifact từ `data/ehr/ehr_preprocessed/`, không
 dựng clinical note/graph và không đọc ảnh.
 
 Data-only preprocessing không cần checkpoint:
@@ -12,8 +12,8 @@ Data-only preprocessing không cần checkpoint:
 ./run_data_only_server.sh
 ```
 
-Nó đọc `/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx` và
-ghi output vào `data/context_clues/raw_pipeline_v1/`:
+Nó đọc `/mnt/disk4/similar_cases_retrieval/data/ehr/raw/thông tin bệnh án.xlsx` và
+ghi output vào `data/ehr/context_clues/raw_pipeline_v1/`:
 
 - `structured/`: năm bảng được dựng trực tiếp từ các sheet raw;
 - `source_prepared/`: toàn bộ structured event, audit, concept-map template và
@@ -34,24 +34,24 @@ Tải checkpoint riêng mà không dùng GPU:
 ```
 
 Weights được ghi tại
-`data/context_clues/weights/gpt-base-4096-clmbr/`, cache tại
-`data/context_clues/hf_cache/`. Script đặt `CUDA_VISIBLE_DEVICES=""`, không
+`data/ehr/context_clues/weights/gpt-base-4096-clmbr/`, cache tại
+`data/ehr/context_clues/hf_cache/`. Script đặt `CUDA_VISIBLE_DEVICES=""`, không
 import PyTorch và tạo `weights_manifest.json` kèm revision/SHA-256. Repo là
 manual-gated nên tài khoản Hugging Face trên server phải được Stanford duyệt
 trước; không dùng checkpoint `*-random` thay thế.
 
 ## Thư mục tách biệt
 
-- Code: `code/context_clues/`
+- Code: `code/ehr/context_clues/`
 - Input raw trên Vaipe:
-  `/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx`
+  `/mnt/disk4/similar_cases_retrieval/data/ehr/raw/thông tin bệnh án.xlsx`
 - Tất cả data/output mới:
-  `/mnt/disk4/similar_cases_retrieval/data/context_clues/`
+  `/mnt/disk4/similar_cases_retrieval/data/ehr/context_clues/`
 
 Output cuối:
 
 ```text
-data/context_clues/
+data/ehr/context_clues/
 ├── raw_pipeline_v1/
 │   ├── manifest.json
 │   ├── structured/
@@ -100,7 +100,7 @@ NumPy/Pandas khác environment graph hiện tại.
 ```bash
 conda create -y -p /mnt/disk1/khangdp/conda_envs/context_clues python=3.11
 /mnt/disk1/khangdp/conda_envs/context_clues/bin/python -m pip install \
-  -r /mnt/disk4/similar_cases_retrieval/code/code/context_clues/requirements.txt
+  -r /mnt/disk4/similar_cases_retrieval/code/code/ehr/context_clues/requirements.txt
 ```
 
 ## Vì sao cần concept map
@@ -113,7 +113,7 @@ gán mã bằng fuzzy matching rồi coi như ground truth.
 Lần chạy đầu tạo template rồi dừng:
 
 ```bash
-cd /mnt/disk4/similar_cases_retrieval/code/code/context_clues
+cd /mnt/disk4/similar_cases_retrieval/code/code/ehr/context_clues
 ./run_server.sh
 ```
 
@@ -152,8 +152,8 @@ Audit tokenizer mà chưa tải model weights:
 
 ```bash
 python embed_visits.py \
-  --prepared-root /mnt/disk4/similar_cases_retrieval/data/context_clues/raw_pipeline_v1/prepared \
-  --output-root /mnt/disk4/similar_cases_retrieval/data/context_clues/audit \
+  --prepared-root /mnt/disk4/similar_cases_retrieval/data/ehr/context_clues/raw_pipeline_v1/prepared \
+  --output-root /mnt/disk4/similar_cases_retrieval/data/ehr/context_clues/audit \
   --audit-only
 ```
 

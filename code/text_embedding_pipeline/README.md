@@ -15,8 +15,8 @@ Output không chứa raw clinical text.
 ```bash
 PYTHON=/mnt/disk1/khangdp/conda_envs/scr_env/bin/python
 "$PYTHON" code/text_embedding_pipeline/embed_clinical_notes.py \
-  --input-notes /mnt/disk4/similar_cases_retrieval/data/ehr_preprocessed/ehr_preprocessed_full/clinical_notes.parquet \
-  --input-visits /mnt/disk4/similar_cases_retrieval/data/ehr_preprocessed/ehr_preprocessed_full/visits.parquet \
+  --input-notes /mnt/disk4/similar_cases_retrieval/data/ehr/ehr_preprocessed/ehr_preprocessed_full/clinical_notes.parquet \
+  --input-visits /mnt/disk4/similar_cases_retrieval/data/ehr/ehr_preprocessed/ehr_preprocessed_full/visits.parquet \
   --output-dir /mnt/disk4/similar_cases_retrieval/data/note_emb \
   --model Qwen/Qwen3-Embedding-8B \
   --max-length 32768 --quantization 8bit --precision fp16

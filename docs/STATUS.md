@@ -1,8 +1,14 @@
 # Project Status
 
-**Cập nhật:** 2026-08-23
+**Cập nhật:** 2026-08-27
 
 **Retrieval unit:** `visit_id`
+
+## Bố cục lưu trữ
+
+- Toàn bộ code xử lý EHR dạng bảng nằm dưới `code/ehr/`.
+- Workbook gốc và mọi artifact EHR dạng bảng nằm dưới `data/ehr/` trên Vaipe.
+- Workbook không còn nằm lẫn với ảnh/PDF trong `data/raw/`.
 
 ## Pipeline hiện tại
 
@@ -19,11 +25,11 @@
 - EHR: 3.500 visit thuộc 3.095 bệnh nhân.
 - SMB raw data-only: 734.370 clinical event, 3.095 demographic event, 18.861
   local concept và 3.500 target visit; output tại
-  `data/ehr_foundation_encoders/raw_pipeline_v1/`. Cả 3.500 target serialize
+  `data/ehr/ehr_foundation_encoders/raw_pipeline_v1/`. Cả 3.500 target serialize
   non-empty bằng `smb_utils` revision
   `4f963e124a940c2ddbc10f50a7448a6e20654555`; serialized clinical text không
   được lưu.
-- Context Clues data-only cũ vẫn ở `data/context_clues/raw_pipeline_v1/`, nhưng
+- Context Clues data-only cũ vẫn ở `data/ehr/context_clues/raw_pipeline_v1/`, nhưng
   model path tạm dừng vì checkpoint gated và không phải input của SMB pipeline.
 - SMB tokenizer và checkpoint pin đã tải thành công trên server. Tokenizer và
   paper cùng khai báo max sequence length 3.300.
@@ -44,7 +50,7 @@
   custom model source đã review và pin SHA-256. Không có lỗi quyền truy cập.
 - Smoke inference đã xếp hàng trong tmux `khangdp` với ngưỡng 18.000 MiB GPU
   trống; output dự kiến tại
-  `data/ehr_foundation_encoders/experiments/smb_v1_qwen3_1_7b/smoke_inference/`.
+  `data/ehr/ehr_foundation_encoders/experiments/smb_v1_qwen3_1_7b/smoke_inference/`.
 - Clinical note: đã embed đủ 3.500 visit.
 - Image manifest: 1.000 bệnh nhân; 999 bệnh nhân có image embedding.
 - Image embeddings hợp lệ: CT 3.322 × 512-D, MRI 3.904 × 768-D,

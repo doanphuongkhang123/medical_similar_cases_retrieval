@@ -2,10 +2,10 @@
 set -euo pipefail
 
 PROJECT_ROOT="${PROJECT_ROOT:-/mnt/disk4/similar_cases_retrieval/code}"
-PIPELINE_ROOT="$PROJECT_ROOT/code/context_clues"
+PIPELINE_ROOT="$PROJECT_ROOT/code/ehr/context_clues"
 PYTHON="${CONTEXT_CLUES_PYTHON:-/mnt/disk1/khangdp/conda_envs/context_clues/bin/python}"
 
-OUTPUT_ROOT="${CONTEXT_CLUES_OUTPUT_ROOT:-/mnt/disk4/similar_cases_retrieval/data/context_clues}"
+OUTPUT_ROOT="${CONTEXT_CLUES_OUTPUT_ROOT:-/mnt/disk4/similar_cases_retrieval/data/ehr/context_clues}"
 RAW_PIPELINE_ROOT="${CONTEXT_CLUES_RAW_PIPELINE_ROOT:-$OUTPUT_ROOT/raw_pipeline_v1}"
 INPUT_ROOT="$RAW_PIPELINE_ROOT/structured"
 SOURCE_PREPARED_ROOT="$RAW_PIPELINE_ROOT/source_prepared"

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 REVISION=4f963e124a940c2ddbc10f50a7448a6e20654555
-RUNTIME=/mnt/disk4/similar_cases_retrieval/data/ehr_foundation_encoders/runtime/smb-utils
+RUNTIME=/mnt/disk4/similar_cases_retrieval/data/ehr/ehr_foundation_encoders/runtime/smb-utils
 
 if [[ -d "$RUNTIME/.git" ]]; then
   actual=$(git -C "$RUNTIME" rev-parse HEAD)

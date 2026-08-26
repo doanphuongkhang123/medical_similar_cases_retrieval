@@ -28,7 +28,7 @@ Chạy trên lab server:
 Output:
 
 ```text
-/mnt/disk4/similar_cases_retrieval/data/ehr_foundation_encoders/raw_pipeline_v1/
+/mnt/disk4/similar_cases_retrieval/data/ehr/ehr_foundation_encoders/raw_pipeline_v1/
 ├── structured/
 ├── common/
 │   ├── events.parquet

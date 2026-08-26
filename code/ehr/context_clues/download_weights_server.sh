@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PIPE=/mnt/disk4/similar_cases_retrieval/code/code/context_clues
+PIPE=/mnt/disk4/similar_cases_retrieval/code/code/ehr/context_clues
 PYTHON=/mnt/disk1/khangdp/conda_envs/scr_env/bin/python
-ROOT=/mnt/disk4/similar_cases_retrieval/data/context_clues
+ROOT=/mnt/disk4/similar_cases_retrieval/data/ehr/context_clues
 WEIGHTS=$ROOT/weights/gpt-base-4096-clmbr
 
 # Keep all Hugging Face cache and model bytes off disk1, which is full.

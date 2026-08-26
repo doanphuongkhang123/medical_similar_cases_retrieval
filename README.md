@@ -1,18 +1,27 @@
 # Similar Cases Retrieval
 
-Repository giữ bốn pipeline tạo embedding độc lập:
+Code và dữ liệu EHR dạng bảng được gom dưới hai namespace riêng:
 
-1. `code/ehr_graph_embedding/`: biểu diễn một visit EHR thành graph, pretrain
+- Code: `code/ehr/`.
+- Data trên Vaipe: `/mnt/disk4/similar_cases_retrieval/data/ehr/`.
+
+Repository giữ các pipeline tạo embedding độc lập:
+
+1. `code/ehr/ehr_graph_embedding/`: biểu diễn một visit EHR thành graph, pretrain
    GNN qua ba stage và xuất một embedding cho mỗi visit.
 2. `code/image_embedding_pipeline/`: đưa ảnh y khoa qua encoder phù hợp với
    modality và xuất embedding ảnh.
 3. `code/text_embedding_pipeline/`: gom toàn bộ clinical note theo visit, đưa
    qua Qwen3-Embedding-8B và xuất embedding văn bản.
-4. `code/ehr_foundation_encoders/`: đọc workbook EHR raw, dựng một common
+4. `code/ehr/ehr_foundation_encoders/`: đọc workbook EHR raw, dựng một common
    MEDS-compatible event store, serialize bằng `smb_utils`, rồi chạy
    `SMB-v1_Qwen3-1.7b_multi-objective` để xuất một frozen embedding cho mỗi
    visit. Code Context Clues cũ vẫn được giữ để truy vết nhưng checkpoint còn
    gated và không phải pipeline foundation encoder đang triển khai.
+
+Các công cụ Context Clues và HyperGraph cũng nằm lần lượt tại
+`code/ehr/context_clues/` và `code/ehr/HyperGraph/`. Workbook EHR gốc nằm tại
+`data/ehr/raw/thông tin bệnh án.xlsx`; `data/raw/` chỉ còn dữ liệu ảnh/PDF.
 
 `code/image_embedding_pipeline/merge_image_cases_with_ehr.py` nối image
 embedding vào đúng `visit_id` để chuẩn bị candidate pool cho retrieval v2.

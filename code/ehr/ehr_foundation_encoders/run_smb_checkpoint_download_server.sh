@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PIPE=/mnt/disk4/similar_cases_retrieval/code/code/ehr_foundation_encoders
+PIPE=/mnt/disk4/similar_cases_retrieval/code/code/ehr/ehr_foundation_encoders
 PYTHON=/mnt/disk1/khangdp/conda_envs/scr_env/bin/python
-DATA_ROOT=/mnt/disk4/similar_cases_retrieval/data/ehr_foundation_encoders
+DATA_ROOT=/mnt/disk4/similar_cases_retrieval/data/ehr/ehr_foundation_encoders
 CHECKPOINT="$DATA_ROOT/models/SMB-v1_Qwen3-1.7b_multi-objective/checkpoint"
 CACHE="$DATA_ROOT/hf_cache"
 

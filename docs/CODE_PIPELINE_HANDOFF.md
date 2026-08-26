@@ -7,15 +7,15 @@
 **Phạm vi code hiện hành:** semantic EHR preprocessing v2, structured-EHR graph
 SSL ba stage, xuất visit embedding, retrieval EHR + note và expert review.
 
-Context Clues frozen inference nằm độc lập tại `code/context_clues/`. Pipeline
-đọc trực tiếp workbook `data/raw/thông tin bệnh án.xlsx`, tự dựng năm bảng
-structured trong `data/context_clues/raw_pipeline_v1/`, bắt buộc local-code →
+Context Clues frozen inference nằm độc lập tại `code/ehr/context_clues/`. Pipeline
+đọc trực tiếp workbook `data/ehr/raw/thông tin bệnh án.xlsx`, tự dựng năm bảng
+structured trong `data/ehr/context_clues/raw_pipeline_v1/`, bắt buộc local-code →
 OMOP mapping có review rồi dựng timeline đến discharge. Checkpoint
 `StanfordShahLab/gpt-base-4096-clmbr` là gated; data-only raw đã hoàn thành
 nhưng artifact embedding 3.500 visit chưa được tạo.
 
 Pipeline structured-EHR foundation encoder hiện hành nằm tại
-`code/ehr_foundation_encoders/` và dùng SMB-v1 Qwen3 1.7B thay cho checkpoint
+`code/ehr/ehr_foundation_encoders/` và dùng SMB-v1 Qwen3 1.7B thay cho checkpoint
 Context Clues đang gated. Pipeline này tự đi từ cùng workbook raw đến common
 MEDS-compatible events, audit/window tối đa 3.300 token và checkpoint pin;
 không đọc output data-only của Context Clues.
@@ -50,7 +50,7 @@ expert-review baseline vì image linkage chỉ phủ một phần cohort.
 
 ### Entry point
 
-- Code: `code/ehr_graph_embedding/preprocessing/preprocess_ehr_tables_v2.py`
+- Code: `code/ehr/ehr_graph_embedding/preprocessing/preprocess_ehr_tables_v2.py`
 - V2 tái sử dụng relational builders của `preprocess_ehr_tables.py`, nhưng thay
   clean/time helpers và tự xây bảng `observations` để không làm mất semantics.
 
@@ -58,10 +58,10 @@ Chạy trên Vaipe:
 
 ```bash
 PROJECT=/mnt/disk4/similar_cases_retrieval/code
-WORKSPACE="$PROJECT/code/ehr_graph_embedding"
+WORKSPACE="$PROJECT/code/ehr/ehr_graph_embedding"
 PYTHON=/mnt/disk1/khangdp/conda_envs/scr_env/bin/python
 WORKBOOK=/path/to/source.xlsx
-OUTPUT=/mnt/disk4/similar_cases_retrieval/data/preprocessed_v2
+OUTPUT=/mnt/disk4/similar_cases_retrieval/data/ehr/preprocessed_v2
 
 cd "$WORKSPACE"
 "$PYTHON" preprocessing/preprocess_ehr_tables_v2.py \
@@ -236,7 +236,7 @@ bắt buộc load Stage 2 checkpoint với cùng fingerprint.
 export embedding ở mỗi stage. Script từ chối overwrite output stage đã tồn tại.
 
 ```bash
-cd /mnt/disk4/similar_cases_retrieval/code/code/ehr_graph_embedding
+cd /mnt/disk4/similar_cases_retrieval/code/code/ehr/ehr_graph_embedding
 ./scripts/run_semantic_v2_full.sh
 ```
 
@@ -295,7 +295,7 @@ Preprocessing v1/v2 và expert review cần `numpy`, `pandas`, `pyarrow`; graph 
 cần thêm `torch`. Các lệnh test chuẩn:
 
 ```bash
-cd code/ehr_graph_embedding
+cd code/ehr/ehr_graph_embedding
 python -m unittest discover -s preprocessing/tests -v
 PYTHONPATH=src python -m unittest discover -s tests -v
 

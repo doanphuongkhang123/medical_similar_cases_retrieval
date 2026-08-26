@@ -28,12 +28,12 @@ raw XLSX
 Input bắt buộc trên lab server:
 
 ```text
-/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx
+/mnt/disk4/similar_cases_retrieval/data/ehr/raw/thông tin bệnh án.xlsx
 ```
 
 Pipeline tự ghi năm bảng `visits`, `diagnoses`, `medicines`, `procedures` và
 `observations` dưới data root riêng. Nó tái sử dụng code parser raw của EHR
-pipeline nhưng không đọc `data/ehr_preprocessed/` hay artifact của Context
+pipeline nhưng không đọc `data/ehr/ehr_preprocessed/` hay artifact của Context
 Clues. Raw path và SHA-256 được ghi vào root, structured và common manifest.
 
 Clinical notes, image, graph, embeddings và model weights không thuộc data
@@ -216,7 +216,7 @@ Nguồn contract chính thức:
 Chuẩn bị raw, common MEDS và target preflight:
 
 ```bash
-cd /mnt/disk4/similar_cases_retrieval/code/code/ehr_foundation_encoders
+cd /mnt/disk4/similar_cases_retrieval/code/code/ehr/ehr_foundation_encoders
 ./run_smb_data_server.sh
 ```
 
@@ -263,7 +263,7 @@ nhất 18.000 MiB trống:
 
 Script gọi trực tiếp
 `/mnt/disk1/khangdp/conda_envs/scr_env/bin/python`, ghi PID/log dưới
-`data/ehr_foundation_encoders/experiments/smb_v1_qwen3_1_7b/logs/`, và ghi
+`data/ehr/ehr_foundation_encoders/experiments/smb_v1_qwen3_1_7b/logs/`, và ghi
 smoke manifest dưới cùng experiment root khi hoàn tất.
 
 Smoke audit một số target:
@@ -277,7 +277,7 @@ SMB_SERIALIZATION_MAX_TARGETS=20 \
 ## Artifact contract
 
 ```text
-/mnt/disk4/similar_cases_retrieval/data/ehr_foundation_encoders/raw_pipeline_v1/
+/mnt/disk4/similar_cases_retrieval/data/ehr/ehr_foundation_encoders/raw_pipeline_v1/
 ├── manifest.json
 ├── structured/
 │   ├── visits.parquet

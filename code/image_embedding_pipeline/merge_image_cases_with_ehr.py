@@ -375,7 +375,7 @@ def parse_args() -> argparse.Namespace:
         "--ehr-visits",
         type=Path,
         default=Path(
-            "/mnt/disk4/similar_cases_retrieval/data/ehr_preprocessed/"
+            "/mnt/disk4/similar_cases_retrieval/data/ehr/ehr_preprocessed/"
             "ehr_preprocessed_full/visits.parquet"
         ),
     )

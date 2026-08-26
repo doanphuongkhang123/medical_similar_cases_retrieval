@@ -35,7 +35,7 @@ Phạm vi hiện tại:
 Input bắt buộc là workbook raw trên server:
 
 ```text
-/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx
+/mnt/disk4/similar_cases_retrieval/data/ehr/raw/thông tin bệnh án.xlsx
 ```
 
 SHA-256 đã ghi trong manifest:
@@ -47,7 +47,7 @@ SHA-256 đã ghi trong manifest:
 Pipeline **không** lấy dữ liệu từ:
 
 ```text
-/mnt/disk4/similar_cases_retrieval/data/ehr_preprocessed/
+/mnt/disk4/similar_cases_retrieval/data/ehr/ehr_preprocessed/
 ```
 
 Code có tái sử dụng các hàm parser raw XLSX của pipeline EHR graph để giữ cùng
@@ -72,42 +72,42 @@ Nếu thiếu một trong năm sheet bắt buộc, pipeline dừng thay vì tạ
 Local:
 
 ```text
-/Users/k/Documents/work/SimilarCasesRetrieval/code/context_clues/run_data_only_server.sh
-/Users/k/Documents/work/SimilarCasesRetrieval/code/context_clues/prepare_raw_source_data.py
+/Users/k/Documents/work/SimilarCasesRetrieval/code/ehr/context_clues/run_data_only_server.sh
+/Users/k/Documents/work/SimilarCasesRetrieval/code/ehr/context_clues/prepare_raw_source_data.py
 ```
 
 Server:
 
 ```text
-/mnt/disk4/similar_cases_retrieval/code/code/context_clues/run_data_only_server.sh
-/mnt/disk4/similar_cases_retrieval/code/code/context_clues/prepare_raw_source_data.py
+/mnt/disk4/similar_cases_retrieval/code/code/ehr/context_clues/run_data_only_server.sh
+/mnt/disk4/similar_cases_retrieval/code/code/ehr/context_clues/prepare_raw_source_data.py
 ```
 
 ### 3.2. Code xử lý chính
 
 | Chức năng | Path local |
 |---|---|
-| Điều phối raw workbook -> structured -> source events | `/Users/k/Documents/work/SimilarCasesRetrieval/code/context_clues/src/context_clues_pipeline/raw_workbook.py` |
-| Chuẩn hóa structured table thành event schema chung, concept map và audit | `/Users/k/Documents/work/SimilarCasesRetrieval/code/context_clues/src/context_clues_pipeline/data.py` |
-| Tạo mapped encoder-ready events sau khi mapping được duyệt | `/Users/k/Documents/work/SimilarCasesRetrieval/code/context_clues/prepare_events.py` |
-| Dựng timeline cho từng target visit | `/Users/k/Documents/work/SimilarCasesRetrieval/code/context_clues/src/context_clues_pipeline/timeline.py` |
-| Tokenization audit và lấy embedding | `/Users/k/Documents/work/SimilarCasesRetrieval/code/context_clues/src/context_clues_pipeline/embedding.py` |
-| CLI chạy tokenizer/model | `/Users/k/Documents/work/SimilarCasesRetrieval/code/context_clues/embed_visits.py` |
+| Điều phối raw workbook -> structured -> source events | `/Users/k/Documents/work/SimilarCasesRetrieval/code/ehr/context_clues/src/context_clues_pipeline/raw_workbook.py` |
+| Chuẩn hóa structured table thành event schema chung, concept map và audit | `/Users/k/Documents/work/SimilarCasesRetrieval/code/ehr/context_clues/src/context_clues_pipeline/data.py` |
+| Tạo mapped encoder-ready events sau khi mapping được duyệt | `/Users/k/Documents/work/SimilarCasesRetrieval/code/ehr/context_clues/prepare_events.py` |
+| Dựng timeline cho từng target visit | `/Users/k/Documents/work/SimilarCasesRetrieval/code/ehr/context_clues/src/context_clues_pipeline/timeline.py` |
+| Tokenization audit và lấy embedding | `/Users/k/Documents/work/SimilarCasesRetrieval/code/ehr/context_clues/src/context_clues_pipeline/embedding.py` |
+| CLI chạy tokenizer/model | `/Users/k/Documents/work/SimilarCasesRetrieval/code/ehr/context_clues/embed_visits.py` |
 
 ### 3.3. Parser raw XLSX được tái sử dụng
 
 Pipeline Context Clues gọi code parser, không gọi output data của pipeline EHR:
 
 ```text
-/Users/k/Documents/work/SimilarCasesRetrieval/code/ehr_graph_embedding/preprocessing/preprocess_ehr_tables.py
-/Users/k/Documents/work/SimilarCasesRetrieval/code/ehr_graph_embedding/preprocessing/preprocess_ehr_tables_v2.py
+/Users/k/Documents/work/SimilarCasesRetrieval/code/ehr/ehr_graph_embedding/preprocessing/preprocess_ehr_tables.py
+/Users/k/Documents/work/SimilarCasesRetrieval/code/ehr/ehr_graph_embedding/preprocessing/preprocess_ehr_tables_v2.py
 ```
 
 Path tương ứng trên server:
 
 ```text
-/mnt/disk4/similar_cases_retrieval/code/code/ehr_graph_embedding/preprocessing/preprocess_ehr_tables.py
-/mnt/disk4/similar_cases_retrieval/code/code/ehr_graph_embedding/preprocessing/preprocess_ehr_tables_v2.py
+/mnt/disk4/similar_cases_retrieval/code/code/ehr/ehr_graph_embedding/preprocessing/preprocess_ehr_tables.py
+/mnt/disk4/similar_cases_retrieval/code/code/ehr/ehr_graph_embedding/preprocessing/preprocess_ehr_tables_v2.py
 ```
 
 Chỉ các builder sau được gọi:
@@ -173,7 +173,7 @@ text tự do.
 Output của stage này:
 
 ```text
-/mnt/disk4/similar_cases_retrieval/data/context_clues/raw_pipeline_v1/structured/
+/mnt/disk4/similar_cases_retrieval/data/ehr/context_clues/raw_pipeline_v1/structured/
 ```
 
 ### 5.1. `visits.parquet`
@@ -369,7 +369,7 @@ raw_pipeline_v1/structured/
 Code:
 
 ```text
-code/context_clues/src/context_clues_pipeline/data.py
+code/ehr/context_clues/src/context_clues_pipeline/data.py
 ```
 
 ### 7.1. Projection từng bảng
@@ -471,7 +471,7 @@ Kết quả raw run hiện tại:
 Output:
 
 ```text
-/mnt/disk4/similar_cases_retrieval/data/context_clues/raw_pipeline_v1/source_prepared/concept_map.csv
+/mnt/disk4/similar_cases_retrieval/data/ehr/context_clues/raw_pipeline_v1/source_prepared/concept_map.csv
 ```
 
 Mỗi row là một cặp duy nhất:
@@ -496,7 +496,7 @@ Kết quả: 18.861 local concept.
 Output:
 
 ```text
-/mnt/disk4/similar_cases_retrieval/data/context_clues/raw_pipeline_v1/source_prepared/concept_mapping_worklist.csv
+/mnt/disk4/similar_cases_retrieval/data/ehr/context_clues/raw_pipeline_v1/source_prepared/concept_mapping_worklist.csv
 ```
 
 Worklist gồm:
@@ -559,7 +559,7 @@ Nếu không đủ điều kiện, `value` là missing nhưng code event vẫn �
 Command/code:
 
 ```text
-/Users/k/Documents/work/SimilarCasesRetrieval/code/context_clues/prepare_events.py
+/Users/k/Documents/work/SimilarCasesRetrieval/code/ehr/context_clues/prepare_events.py
 ```
 
 Input:
@@ -594,7 +594,7 @@ Inference bị chặn mặc định nếu event mapping coverage dưới 50%.
 Code:
 
 ```text
-code/context_clues/src/context_clues_pipeline/timeline.py
+code/ehr/context_clues/src/context_clues_pipeline/timeline.py
 ```
 
 Với target visit `v`, pipeline lấy:
@@ -617,8 +617,8 @@ là bag-of-events riêng của visit.
 Code:
 
 ```text
-code/context_clues/src/context_clues_pipeline/embedding.py
-code/context_clues/embed_visits.py
+code/ehr/context_clues/src/context_clues_pipeline/embedding.py
+code/ehr/context_clues/embed_visits.py
 ```
 
 Quy tắc:
@@ -679,7 +679,7 @@ Expected output shape:
 Output cuối dự kiến:
 
 ```text
-/mnt/disk4/similar_cases_retrieval/data/context_clues/embeddings/gpt-base-4096-clmbr/
+/mnt/disk4/similar_cases_retrieval/data/ehr/context_clues/embeddings/gpt-base-4096-clmbr/
 ├── visit_embeddings.parquet
 ├── visit_embeddings.npy
 ├── visit_embedding_index.parquet
@@ -697,7 +697,7 @@ row_index -> patient_id -> visit_id
 ## 14. Output data-only hiện có
 
 ```text
-/mnt/disk4/similar_cases_retrieval/data/context_clues/raw_pipeline_v1/
+/mnt/disk4/similar_cases_retrieval/data/ehr/context_clues/raw_pipeline_v1/
 ├── manifest.json
 ├── structured/
 │   ├── visits.parquet
@@ -736,7 +736,7 @@ Các kiểm tra đã pass trên `vaipe-Z790-UD-AX`:
 
 ```bash
 ssh vaipe_aiotlab
-cd /mnt/disk4/similar_cases_retrieval/code/code/context_clues
+cd /mnt/disk4/similar_cases_retrieval/code/code/ehr/context_clues
 ./run_data_only_server.sh
 ```
 
@@ -755,7 +755,7 @@ ghi đè và đã kiểm tra đúng target.
 Artifact cũ:
 
 ```text
-/mnt/disk4/similar_cases_retrieval/data/context_clues/source_prepared/
+/mnt/disk4/similar_cases_retrieval/data/ehr/context_clues/source_prepared/
 ```
 
 được tạo từ `ehr_preprocessed_full`, không phải trực tiếp từ raw workbook. Nó
@@ -764,7 +764,7 @@ Artifact cũ:
 Artifact chuẩn phải bắt đầu từ:
 
 ```text
-/mnt/disk4/similar_cases_retrieval/data/context_clues/raw_pipeline_v1/
+/mnt/disk4/similar_cases_retrieval/data/ehr/context_clues/raw_pipeline_v1/
 ```
 
 Sự khác biệt đã quan sát: snapshot cũ có 5.386 diagnosis thiếu `event_time`,

@@ -22,9 +22,13 @@ This project has two distinct environments. Do not treat them as interchangeable
 - SSH alias: `vaipe_aiotlab`
 - Code root: `/mnt/disk4/similar_cases_retrieval/code`
 - Data root: `/mnt/disk4/similar_cases_retrieval/data`
+- Structured-EHR code root:
+  `/mnt/disk4/similar_cases_retrieval/code/code/ehr/`
+- Structured-EHR data root:
+  `/mnt/disk4/similar_cases_retrieval/data/ehr/`
 - Canonical raw EHR workbook:
-  `/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx`
-- `/mnt/disk4/similar_cases_retrieval/data/ehr_preprocessed/` contains
+  `/mnt/disk4/similar_cases_retrieval/data/ehr/raw/thông tin bệnh án.xlsx`
+- `/mnt/disk4/similar_cases_retrieval/data/ehr/ehr_preprocessed/` contains
   downstream derived artifacts. Do not silently use those artifacts as the
   source of a new pipeline that is required to start from raw data.
 - The server contains the real datasets and shared NVIDIA GPUs.
@@ -36,6 +40,9 @@ This project has two distinct environments. Do not treat them as interchangeable
   own data folder so lineage does not depend on another pipeline's outputs.
 - Clinical data, embeddings, checkpoints, caches, logs, and experiment outputs
   stay under the server data/experiment areas and never enter Git.
+- Do not place structured-EHR source or derived artifacts directly under the
+  shared data root. Keep them below `data/ehr/`; image, PDF, text-embedding,
+  and cross-modal retrieval artifacts remain in their modality-specific roots.
 
 Before server work, verify identity and paths:
 
@@ -76,8 +83,8 @@ local to server with `rsync`; do not assume `git pull` exists on the server.
 Example for one pipeline:
 
 ```bash
-LOCAL=/Users/k/Documents/work/SimilarCasesRetrieval/code/context_clues/
-REMOTE=/mnt/disk4/similar_cases_retrieval/code/code/context_clues/
+LOCAL=/Users/k/Documents/work/SimilarCasesRetrieval/code/ehr/context_clues/
+REMOTE=/mnt/disk4/similar_cases_retrieval/code/code/ehr/context_clues/
 
 rsync -avhn --itemize-changes \
   --exclude '__pycache__/' \

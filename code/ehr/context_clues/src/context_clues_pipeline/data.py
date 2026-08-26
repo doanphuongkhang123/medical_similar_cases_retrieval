@@ -641,7 +641,7 @@ Then materialize encoder-ready events:
 
 ```bash
 PY=/mnt/disk1/khangdp/conda_envs/scr_env/bin/python
-PIPE=/mnt/disk4/similar_cases_retrieval/code/code/context_clues
+PIPE=/mnt/disk4/similar_cases_retrieval/code/code/ehr/context_clues
 INPUT={manifest['input_root']}
 SOURCE={output_root}
 PIPELINE_ROOT={output_root.parent}
@@ -656,12 +656,12 @@ After gated-model access and GPU space are available, place Hugging Face cache
 on disk4 (disk1 is full) and run:
 
 ```bash
-export HF_HOME=/mnt/disk4/similar_cases_retrieval/data/context_clues/hf_cache
-export PYTHONPATH=/mnt/disk4/similar_cases_retrieval/data/context_clues/runtime/python_packages
+export HF_HOME=/mnt/disk4/similar_cases_retrieval/data/ehr/context_clues/hf_cache
+export PYTHONPATH=/mnt/disk4/similar_cases_retrieval/data/ehr/context_clues/runtime/python_packages
 
 $PY $PIPE/embed_visits.py \\
   --prepared-root $PIPELINE_ROOT/prepared \\
-  --output-root /mnt/disk4/similar_cases_retrieval/data/context_clues/embeddings/gpt-base-4096-clmbr \\
+  --output-root /mnt/disk4/similar_cases_retrieval/data/ehr/context_clues/embeddings/gpt-base-4096-clmbr \\
   --model StanfordShahLab/gpt-base-4096-clmbr \\
   --timeline-mode history \\
   --max-length 4096

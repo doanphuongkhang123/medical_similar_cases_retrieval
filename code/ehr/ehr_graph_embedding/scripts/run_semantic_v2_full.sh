@@ -2,9 +2,9 @@
 # Sequential full semantic-v2 training: Stage 1 -> Stage 2 -> Stage 3.
 set -euo pipefail
 
-workspace=/mnt/disk4/similar_cases_retrieval/code/code/ehr_graph_embedding
-data_root=/mnt/disk4/similar_cases_retrieval/data/preprocessed_v2
-experiment_root=/mnt/disk4/similar_cases_retrieval/data/experiments
+workspace=/mnt/disk4/similar_cases_retrieval/code/code/ehr/ehr_graph_embedding
+data_root=/mnt/disk4/similar_cases_retrieval/data/ehr/preprocessed_v2
+experiment_root=/mnt/disk4/similar_cases_retrieval/data/ehr/experiments
 python=/mnt/disk1/khangdp/conda_envs/scr_env/bin/python
 
 stage1="$experiment_root/ehr_graph_semantic_v2_s1_e20_es5_20260816"

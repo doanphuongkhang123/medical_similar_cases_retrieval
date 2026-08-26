@@ -1,9 +1,26 @@
 # Data contract
 
+## Bố cục EHR trên server
+
+- Root duy nhất cho EHR dạng bảng:
+  `/mnt/disk4/similar_cases_retrieval/data/ehr/`.
+- Raw workbook: `raw/thông tin bệnh án.xlsx`.
+- Snapshot cũ và semantic-v2: `ehr_preprocessed/`, `preprocessed_v2/`.
+- Bản CSV làm sạch: `processed/`.
+- Graph/encoder artifacts: `experiments/`, `HyperGraph/`, `context_clues/`,
+  `ehr_foundation_encoders/`.
+- `layout_manifest.json` ghi inventory hiện hành và ánh xạ các absolute path cũ
+  sang namespace mới. Manifest lịch sử của từng run vẫn giữ nguyên path tại
+  thời điểm chạy; verifier phải resolve qua layout manifest khi source đã được
+  chuyển vị trí.
+- `data/raw/` bên ngoài namespace này chỉ dành cho ảnh/PDF; không chứa workbook
+  EHR. Dữ liệu note embedding và retrieval đa phương thức vẫn ở root riêng vì
+  không phải artifact của pipeline EHR bảng.
+
 ## Snapshot EHR hiện tại
 
 - Root:
-  `/mnt/disk4/similar_cases_retrieval/data/ehr_preprocessed/ehr_preprocessed_full/`.
+  `/mnt/disk4/similar_cases_retrieval/data/ehr/ehr_preprocessed/ehr_preprocessed_full/`.
 - 3.500 `visit_id` duy nhất thuộc 3.095 `patient_id`.
 - `patient_id = SoVaoVien`; `visit_id = SoBenhAn`.
 - Bảng chính: `visits`, `diagnoses`, `medicines`, `procedures`,
@@ -24,17 +41,17 @@
 ## Context Clues structured EHR
 
 - Input gốc bắt buộc là workbook
-  `/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx`, không
-  lấy artifact từ `data/ehr_preprocessed/` làm nguồn.
+  `/mnt/disk4/similar_cases_retrieval/data/ehr/raw/thông tin bệnh án.xlsx`, không
+  lấy artifact từ `data/ehr/ehr_preprocessed/` làm nguồn.
 - Pipeline tự dựng năm bảng `visits`, `diagnoses`, `medicines`, `procedures`,
-  `observations` dưới `data/context_clues/raw_pipeline_v1/structured/`; không
+  `observations` dưới `data/ehr/context_clues/raw_pipeline_v1/structured/`; không
   dựng hoặc đọc `clinical_notes` và graph.
 - Local concept phải được review và map sang code OMOP-standard có trong
   tokenizer Context Clues.
 - Một target `visit_id` dùng timeline cùng bệnh nhân đến `discharge_time` và
   lấy tối đa 4.096 token gần nhất.
 - Data/output riêng:
-  `/mnt/disk4/similar_cases_retrieval/data/context_clues/raw_pipeline_v1/`.
+  `/mnt/disk4/similar_cases_retrieval/data/ehr/context_clues/raw_pipeline_v1/`.
 - Contract output cuối: đúng một row/visit trong
   `embeddings/gpt-base-4096-clmbr/visit_embeddings.parquet`.
 
@@ -43,11 +60,11 @@
 - Checkpoint hiện hành:
   `standardmodelbio/SMB-v1_Qwen3-1.7b_multi-objective`.
 - Input gốc bắt buộc vẫn là workbook
-  `/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx` với
+  `/mnt/disk4/similar_cases_retrieval/data/ehr/raw/thông tin bệnh án.xlsx` với
   SHA-256 ghi trong manifest; không đọc artifact Context Clues hoặc
-  `data/ehr_preprocessed/`.
+  `data/ehr/ehr_preprocessed/`.
 - Data/output riêng:
-  `/mnt/disk4/similar_cases_retrieval/data/ehr_foundation_encoders/raw_pipeline_v1/`.
+  `/mnt/disk4/similar_cases_retrieval/data/ehr/ehr_foundation_encoders/raw_pipeline_v1/`.
 - `common/events.parquet` giữ một bản canonical event duy nhất và đồng thời có
   MEDS columns `subject_id`, `time`, `code`, `table`, `numeric_value`,
   `text_value`, `unit`.
@@ -68,7 +85,7 @@
   Selection plan chỉ lưu `first_retained_event_order_within_patient` cùng audit
   counts/hash; events vẫn chỉ có một bản trong `common/events.parquet`.
 - Checkpoint revision `81a889a17c84160eaab4c975c70e451482bc9e56` được lưu
-  riêng tại `data/ehr_foundation_encoders/models/`; downloader kiểm tra exact
+  riêng tại `data/ehr/ehr_foundation_encoders/models/`; downloader kiểm tra exact
   file allow-list và SHA-256 của custom source/weights trước khi publish.
 - Embedding contract là một vector 2.048-D cho mỗi target visit, lấy tại last
   non-padding token của final decoder hidden state. Smoke audit không persist

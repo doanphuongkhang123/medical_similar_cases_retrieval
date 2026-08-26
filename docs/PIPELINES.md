@@ -9,7 +9,7 @@ EHR tables -> visit graph -> Stage 1 NAM/numeric masking
            -> 256-D L2-normalized visit embedding
 ```
 
-Source: `code/ehr_graph_embedding/`.
+Source: `code/ehr/ehr_graph_embedding/`.
 
 ## 2. Image embedding
 
@@ -33,7 +33,7 @@ Source: `code/text_embedding_pipeline/`.
 ## 4. SMB structured-EHR foundation embedding
 
 ```text
-raw/thông tin bệnh án.xlsx
+ehr/raw/thông tin bệnh án.xlsx
     -> pipeline-owned visits + diagnoses + medicines + procedures + observations
     -> one canonical MEDS-compatible event store
     -> chronological patient timeline through target discharge
@@ -44,9 +44,9 @@ raw/thông tin bệnh án.xlsx
     -> [next] one frozen embedding per visit
 ```
 
-Source: `code/ehr_foundation_encoders/`. Data trung gian và artifact nằm riêng
-dưới `data/ehr_foundation_encoders/raw_pipeline_v1/`. Pipeline không tiêu thụ
-`data/ehr_preprocessed/` hay output Context Clues, không dựng clinical
+Source: `code/ehr/ehr_foundation_encoders/`. Data trung gian và artifact nằm riêng
+dưới `data/ehr/ehr_foundation_encoders/raw_pipeline_v1/`. Pipeline không tiêu thụ
+`data/ehr/ehr_preprocessed/` hay output Context Clues, không dựng clinical
 note/graph và không nhân bản event table cho mỗi encoder/target. Data-only,
 serialization, token audit, window selection và checkpoint download đã hoàn
 tất; smoke inference đang chờ GPU dùng chung đủ trống.

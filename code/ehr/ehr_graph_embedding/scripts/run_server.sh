@@ -14,16 +14,16 @@ shift 3
 python=/mnt/disk1/khangdp/conda_envs/scr_env/bin/python
 
 case "$workspace" in
-  /mnt/disk4/similar_cases_retrieval/code/code/ehr_graph_embedding) ;;
+  /mnt/disk4/similar_cases_retrieval/code/code/ehr/ehr_graph_embedding) ;;
   *) echo "WORKSPACE must be the EHR graph embedding workspace" >&2; exit 2 ;;
 esac
 case "$data_root" in
-  /mnt/disk4/similar_cases_retrieval/data/ehr_preprocessed/*) ;;
+  /mnt/disk4/similar_cases_retrieval/data/ehr/ehr_preprocessed/*) ;;
   *) echo "DATA_ROOT must be the approved read-only preprocessed EHR root" >&2; exit 2 ;;
 esac
 case "$output_dir" in
-  /mnt/disk4/similar_cases_retrieval/data/experiments/*) ;;
-  *) echo "OUTPUT_DIR must be under data/experiments" >&2; exit 2 ;;
+  /mnt/disk4/similar_cases_retrieval/data/ehr/experiments/*) ;;
+  *) echo "OUTPUT_DIR must be under data/ehr/experiments" >&2; exit 2 ;;
 esac
 
 if [[ -e "$output_dir" ]]; then

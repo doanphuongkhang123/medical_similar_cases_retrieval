@@ -5,7 +5,7 @@ L2-normalize. Clinical note và image không đi vào encoder này.
 
 Contract semantic-v2 chi tiết, thứ tự 16 numeric features, objective từng stage
 và downstream expert-review được ghi tại
-[`docs/CODE_PIPELINE_HANDOFF.md`](../../docs/CODE_PIPELINE_HANDOFF.md).
+[`docs/CODE_PIPELINE_HANDOFF.md`](../../../docs/CODE_PIPELINE_HANDOFF.md).
 
 Split hiện tại được hash theo `visit_id` với tỉ lệ train/validation/test
 70/15/15. Đây là split phục vụ pretraining hiện hành, chưa phải protocol
@@ -31,10 +31,10 @@ cùng data fingerprint.
 
 ```bash
 PROJECT=/mnt/disk4/similar_cases_retrieval/code
-WORKSPACE="$PROJECT/code/ehr_graph_embedding"
+WORKSPACE="$PROJECT/code/ehr/ehr_graph_embedding"
 PYTHON=/mnt/disk1/khangdp/conda_envs/scr_env/bin/python
-DATA=/mnt/disk4/similar_cases_retrieval/data/ehr_preprocessed/ehr_preprocessed_full
-RUN=/mnt/disk4/similar_cases_retrieval/data/experiments/ehr_graph_stage1_001
+DATA=/mnt/disk4/similar_cases_retrieval/data/ehr/ehr_preprocessed/ehr_preprocessed_full
+RUN=/mnt/disk4/similar_cases_retrieval/data/ehr/experiments/ehr_graph_stage1_001
 
 PYTHONPATH="$WORKSPACE/src" "$PYTHON" -m ehr_graph_ssl.train \
   --data-root "$DATA" --output "$RUN" --stage 1 --epochs 20 \

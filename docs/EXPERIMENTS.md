@@ -6,7 +6,7 @@
 
 - Đã chạy ba stage trên 3.500 visit và xuất 256-D L2-normalized embedding.
 - Các run nằm dưới
-  `/mnt/disk4/similar_cases_retrieval/data/experiments/`.
+  `/mnt/disk4/similar_cases_retrieval/data/ehr/experiments/`.
 - Artifact stage 3 hiện có `visit_embeddings.parquet` và quality report;
   chưa chốt run nào làm baseline retrieval cuối cùng.
 
