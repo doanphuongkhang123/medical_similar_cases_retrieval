@@ -24,10 +24,10 @@ This project has two distinct environments. Do not treat them as interchangeable
 - Data root: `/mnt/disk4/similar_cases_retrieval/data`
 - Structured-EHR code root:
   `/mnt/disk4/similar_cases_retrieval/code/code/ehr/`
-- Structured-EHR data root:
+- Structured-EHR derived-data root:
   `/mnt/disk4/similar_cases_retrieval/data/ehr/`
 - Canonical raw EHR workbook:
-  `/mnt/disk4/similar_cases_retrieval/data/ehr/raw/thông tin bệnh án.xlsx`
+  `/mnt/disk4/similar_cases_retrieval/data/raw/thông tin bệnh án.xlsx`
 - `/mnt/disk4/similar_cases_retrieval/data/ehr/ehr_preprocessed/` contains
   downstream derived artifacts. Do not silently use those artifacts as the
   source of a new pipeline that is required to start from raw data.
@@ -40,9 +40,10 @@ This project has two distinct environments. Do not treat them as interchangeable
   own data folder so lineage does not depend on another pipeline's outputs.
 - Clinical data, embeddings, checkpoints, caches, logs, and experiment outputs
   stay under the server data/experiment areas and never enter Git.
-- Do not place structured-EHR source or derived artifacts directly under the
-  shared data root. Keep them below `data/ehr/`; image, PDF, text-embedding,
-  and cross-modal retrieval artifacts remain in their modality-specific roots.
+- Keep the canonical raw EHR workbook unchanged under `data/raw/`. Place only
+  structured-EHR derived artifacts below `data/ehr/`; image, PDF,
+  text-embedding, and cross-modal retrieval artifacts remain in their
+  modality-specific roots.
 
 Before server work, verify identity and paths:
 
@@ -127,13 +128,19 @@ ssh vaipe_aiotlab \
 ```
 
 - Never kill, pause, renice, or interfere with another user's process.
-- Never start a heavy job on a full/busy GPU.
+- Do not start a full production job on a full/busy GPU. A single, deliberately
+  bounded smoke test (for example one series or the smallest supported batch)
+  may be launched after inspecting utilization and running processes to measure
+  actual memory use and determine whether it OOMs. Do not kill, pause, renice,
+  or otherwise interfere with another user's process for that test.
 - CPU-only preprocessing and network-only model downloads must explicitly hide
   GPUs with `CUDA_VISIBLE_DEVICES=""` when practical.
 - Put Hugging Face/model caches on `/mnt/disk4`, not a full system disk.
 
-If no GPU has enough free memory, prepare a server-side wait-and-run script
-instead of repeatedly launching the job. The script must:
+If no GPU has enough free memory for the full job, first run and record one
+bounded smoke test when the user requests a feasibility/OOM check. Then prepare
+a server-side wait-and-run script instead of repeatedly launching the full job.
+The script must:
 
 - poll `nvidia-smi` at a reasonable interval (normally 60 seconds);
 - require an explicit free-memory threshold suitable for the job;
