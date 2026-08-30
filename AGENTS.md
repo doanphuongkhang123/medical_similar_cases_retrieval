@@ -128,31 +128,38 @@ ssh vaipe_aiotlab \
 ```
 
 - Never kill, pause, renice, or interfere with another user's process.
-- Do not start a full production job on a full/busy GPU. A single, deliberately
-  bounded smoke test (for example one series or the smallest supported batch)
-  may be launched after inspecting utilization and running processes to measure
-  actual memory use and determine whether it OOMs. Do not kill, pause, renice,
-  or otherwise interfere with another user's process for that test.
+- When feasibility or OOM behavior is uncertain, first run one deliberately
+  bounded CUDA smoke using the real production batch/configuration whenever
+  possible. An explicit per-process CUDA memory cap may be used to reproduce a
+  constrained-memory condition. Record the observed free memory, any hard cap,
+  batch/configuration, peak allocated/reserved memory, and pass/OOM result.
+- If that representative smoke passes, launch the requested full job without a
+  fixed free-VRAM threshold or GPU-utilization threshold. These GPU metrics are
+  diagnostic log fields, not launch gates. If the run actually OOMs, preserve
+  the error and nonzero exit status and report it; do not repeatedly relaunch it.
+- If the representative smoke OOMs, or no representative smoke can be run,
+  report the evidence instead of inventing a resource threshold. Create a
+  wait-and-run job only when the user explicitly requests one.
 - CPU-only preprocessing and network-only model downloads must explicitly hide
   GPUs with `CUDA_VISIBLE_DEVICES=""` when practical.
 - Put Hugging Face/model caches on `/mnt/disk4`, not a full system disk.
 
-If no GPU has enough free memory for the full job, first run and record one
-bounded smoke test when the user requests a feasibility/OOM check. Then prepare
-a server-side wait-and-run script instead of repeatedly launching the full job.
-The script must:
+When the user explicitly requests a server-side wait-and-run script, it must:
 
 - poll `nvidia-smi` at a reasonable interval (normally 60 seconds);
-- require an explicit free-memory threshold suitable for the job;
-- select/export the chosen `CUDA_VISIBLE_DEVICES` only after the threshold is met;
+- use only a launch condition explicitly requested by the user; do not infer a
+  free-memory or utilization threshold;
+- log the observed GPU state whenever it polls;
+- select/export the chosen `CUDA_VISIBLE_DEVICES` only after the requested
+  condition is met;
 - write a PID and timestamped log under the server experiment/output folder;
 - use a lock or other guard so the same job is not launched twice;
 - preserve the exact command/configuration for reproducibility;
 - exit nonzero and log the reason if the final command fails.
 
-Launch the waiter in a durable way such as `nohup`/`tmux`, then report its PID,
-log path, GPU threshold, and eventual artifact path. A waiting job is “queued,”
-not “completed.”
+Launch an explicitly requested waiter in a durable way such as `nohup`/`tmux`,
+then report its PID, log path, exact launch condition, and eventual artifact
+path. A waiting job is “queued,” not “completed.”
 
 ## 5. GitHub publishing policy
 
