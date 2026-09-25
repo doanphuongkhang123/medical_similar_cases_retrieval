@@ -39,6 +39,20 @@ class MoeCaseHighlightTests(unittest.TestCase):
         candidate = "Tóm tắt bệnh án: Không sốt cao liên tục."
         self.assertEqual(matched_spans(query, candidate), ([], []))
 
+    def test_dau_dau_matches_with_or_without_bi(self):
+        query = "Tóm tắt bệnh án: Bệnh nhân bị đau đầu."
+        candidate = "Tóm tắt bệnh án: Bệnh nhân đau đầu."
+        query_spans, candidate_spans = matched_spans(query, candidate)
+        self.assertIn("đau đầu", [query[left:right].casefold() for left, right, kind in query_spans if kind == "summary"])
+        self.assertIn("đau đầu", [candidate[left:right].casefold() for left, right, kind in candidate_spans if kind == "summary"])
+        self.assertEqual(visible_text(marked_html(query, query_spans)), query)
+        self.assertEqual(visible_text(marked_html(candidate, candidate_spans)), candidate)
+
+    def test_dau_dau_negation_prevents_positive_highlight(self):
+        query = "Tóm tắt bệnh án: Bệnh nhân đau đầu."
+        candidate = "Tóm tắt bệnh án: Bệnh nhân không đau đầu."
+        self.assertEqual(matched_spans(query, candidate), ([], []))
+
     def test_generic_phrase_is_ignored_and_html_is_escaped(self):
         query = "Tóm tắt bệnh án: Bệnh nhân vào viện <script>alert(1)</script>"
         candidate = "Tóm tắt bệnh án: Bệnh nhân vào viện"

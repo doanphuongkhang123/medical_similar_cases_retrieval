@@ -20,7 +20,7 @@ NEGATORS = {"không", "chưa", "chẳng", "chả", "phủ", "âm"}
 GENERIC = {
     "bệnh", "nhân", "vào", "ra", "viện", "được", "theo", "dõi", "điều", "trị",
     "khám", "lần", "tình", "trạng", "với", "và", "các", "của", "trong", "sau",
-    "trước", "này", "đã", "có", "không", "chưa", "ngày", "tháng", "năm",
+    "trước", "này", "đã", "có", "bị", "không", "chưa", "ngày", "tháng", "năm",
     "khi", "tại", "từ", "đến", "là", "do", "cho", "thấy", "ghi", "nhận",
 }
 KIND_CLASS = {"icd": "match-icd", "diagnosis": "match-diagnosis", "summary": "match-summary"}
@@ -105,7 +105,7 @@ def matched_spans(query_text: str, candidate_text: str) -> tuple[list[tuple[int,
     rules = (
         (_icd_spans, "icd"),
         (lambda text: _phrases(text, "Chẩn đoán ra viện", 2, 6, 8, 1), "diagnosis"),
-        (lambda text: _phrases(text, "Tóm tắt bệnh án", 3, 6, 12, 2), "summary"),
+        (lambda text: _phrases(text, "Tóm tắt bệnh án", 2, 6, 6, 2), "summary"),
     )
     for extract, kind in rules:
         query_spans, candidate_spans = _shared_intervals(extract(query_text), extract(candidate_text), kind)
