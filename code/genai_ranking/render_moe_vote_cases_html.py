@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from datetime import datetime, timezone
 from html import escape
 import json
@@ -11,6 +12,7 @@ import re
 import socket
 
 from common import sha256, write_json
+from moe_case_highlight import marked_html, matched_spans
 from moe_vote_rank import QUERY_COUNT, TOP_K, read_json, read_jsonl, verify
 
 
@@ -78,19 +80,26 @@ def checked_inputs(results_root: Path, input_bundle: Path) -> tuple[list[dict], 
     return rows, texts, ranking_manifest, input_path, input_manifest
 
 
-def render(rows: list[dict], texts: dict[str, str]) -> str:
+def render(rows: list[dict], texts: dict[str, str]) -> tuple[str, dict[str, int]]:
     options = ''.join(
         f'<option value="query-{index}">{escape(row["query_patient_id"])}</option>'
         for index, row in enumerate(rows)
     )
     panels = []
+    highlight_counts = Counter()
     for query_index, row in enumerate(rows):
         query_id = row["query_patient_id"]
         choices = []
         case_views = []
+        query_views = []
         for item in row["top20"]:
             rank = item["rank"]
             patient_id = item["patient_id"]
+            query_spans, candidate_spans = matched_spans(texts[query_id], texts[patient_id])
+            for kind in {kind for _, _, kind in query_spans + candidate_spans}:
+                highlight_counts[f"pairs_with_{kind}"] += 1
+            for _, _, kind in query_spans + candidate_spans:
+                highlight_counts[f"marks_{kind}"] += 1
             selected_by = ''.join(
                 f'<span class="model-chip">{label}</span>'
                 for model, label in MODEL_LABELS if model in item["model_scores"]
@@ -98,23 +107,32 @@ def render(rows: list[dict], texts: dict[str, str]) -> str:
             active = ' active' if rank == 1 else ''
             hidden = '' if rank == 1 else ' hidden'
             choices.append(
-                f'<button type="button" class="choice{active}" data-target="case-{query_index}-{rank}">'
+                f'<button type="button" class="choice{active}" data-target="case-{query_index}-{rank}" '
+                f'data-query-target="query-highlight-{query_index}-{rank}">'
                 f'<span class="rank">{rank:02d}</span><span class="choice-main">'
                 f'<strong>{escape(patient_id)}</strong><span class="models">{selected_by}</span>'
                 '</span></button>'
+            )
+            query_views.append(
+                f'<pre class="query-version" id="query-highlight-{query_index}-{rank}"{hidden}>'
+                f'{marked_html(texts[query_id], query_spans)}</pre>'
+            )
+            no_matches = (
+                '<p class="no-matches">Không tìm thấy đoạn trùng theo các quy tắc hiện tại.</p>'
+                if not query_spans and not candidate_spans else ''
             )
             case_views.append(
                 f'<article class="case" id="case-{query_index}-{rank}"{hidden}>'
                 f'<span class="eyebrow">CANDIDATE #{rank:02d}</span>'
                 f'<h2>{escape(patient_id)}</h2>'
                 f'<div class="selected-by"><span>Được chọn bởi</span><span class="models">{selected_by}</span></div>'
-                f'<pre>{escape(texts[patient_id])}</pre></article>'
+                f'{no_matches}<pre>{marked_html(texts[patient_id], candidate_spans)}</pre></article>'
             )
         panels.append(
             f'<section class="query-panel" id="query-{query_index}"'
             + ('' if query_index == 0 else ' hidden') + '>'
             '<div class="query-content"><span class="eyebrow">BỆNH NHÂN QUERY</span>'
-            f'<h2>{escape(query_id)}</h2><pre>{escape(texts[query_id])}</pre></div>'
+            f'<h2>{escape(query_id)}</h2>' + ''.join(query_views) + '</div>'
             '<div class="candidate-content"><div class="candidate-list">'
             + ''.join(choices) + '</div><div class="case-container">'
             + ''.join(case_views) + '</div></div></section>'
@@ -126,7 +144,7 @@ def render(rows: list[dict], texts: dict[str, str]) -> str:
 :root{{--ink:#173027;--muted:#567066;--line:#d6e5db;--green:#176449;--paper:#f2f7f2}}
 *{{box-sizing:border-box}}body{{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}}
 header{{padding:26px max(22px,calc((100vw - 1500px)/2));background:#174d39;color:white}}header h1{{margin:4px 0;font-size:clamp(24px,3vw,36px)}}header p{{margin:4px 0 0;color:#d7ece0}}
-main{{max-width:1540px;margin:auto;padding:22px 20px 42px}}.toolbar{{display:flex;gap:14px;align-items:center;margin-bottom:16px;flex-wrap:wrap}}
+main{{max-width:1540px;margin:auto;padding:22px 20px 42px}}.toolbar{{display:flex;gap:14px;align-items:center;margin-bottom:9px;flex-wrap:wrap}}.rule-note{{margin:0 0 16px;color:var(--muted);font-size:12px}}
 label{{font-weight:750}}select{{padding:9px 12px;border:1px solid #a7c0af;border-radius:9px;background:white;color:var(--ink);font:inherit;min-width:180px}}
 .eyebrow{{font-size:11px;font-weight:850;letter-spacing:.12em;color:var(--green)}}.query-panel{{display:grid;grid-template-columns:minmax(280px,1fr) minmax(480px,1.6fr);gap:16px}}
 [hidden]{{display:none!important}}.query-content,.candidate-content{{background:white;border:1px solid var(--line);border-radius:14px;box-shadow:0 5px 20px #284e3010}}
@@ -137,11 +155,17 @@ label{{font-weight:750}}select{{padding:9px 12px;border:1px solid #a7c0af;border
 .models{{display:flex;gap:4px;flex-wrap:wrap}}.model-chip{{display:inline-block;padding:2px 6px;border-radius:5px;background:#e5efe8;color:#22543b;font-size:10px;font-weight:800;white-space:nowrap}}
 .selected-by{{display:grid;gap:7px;margin:-5px 0 16px;color:var(--muted);font-size:12px;font-weight:750}}.selected-by .model-chip{{font-size:12px;padding:4px 8px}}
 .case-container{{padding:20px;min-width:0;max-height:75vh;overflow:auto}}.case h2{{margin-bottom:15px}}
+.legend{{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0 0;color:#e5f4e9;font-size:12px}}.legend span{{display:inline-flex;align-items:center;gap:5px}}.legend i{{width:12px;height:12px;display:inline-block;border-radius:3px}}
+mark{{border-radius:3px;padding:1px 2px;color:inherit}}.match-icd{{background:#a7eddf}}.match-diagnosis{{background:#e1c9fa}}.match-summary{{background:#ffe3a2}}
+.legend .match-icd{{background:#a7eddf}}.legend .match-diagnosis{{background:#e1c9fa}}.legend .match-summary{{background:#ffe3a2}}
+.no-matches{{color:var(--muted);font-size:12px;margin:-5px 0 13px}}
 @media(max-width:900px){{.query-panel{{grid-template-columns:1fr}}.candidate-content{{grid-template-columns:1fr}}.candidate-list{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;border-right:0;border-bottom:1px solid var(--line);max-height:230px}}.choice{{margin:0}}.case-container{{max-height:none}}}}
 @media(max-width:600px){{main{{padding:14px 10px}}.query-content{{padding:16px}}.candidate-list{{grid-template-columns:repeat(2,minmax(0,1fr))}}}}
 </style></head><body>
-<header><h1>Top 20 bệnh nhân tương tự</h1><p>Chọn query và candidate để xem nội dung bệnh án cùng các model đã chọn bệnh nhân đó.</p></header>
+<header><h1>Top 20 bệnh nhân tương tự</h1><p>Chọn query và candidate để xem nội dung bệnh án cùng các model đã chọn bệnh nhân đó.</p>
+<div class="legend"><span><i class="match-icd"></i>ICD trùng chính xác</span><span><i class="match-diagnosis"></i>Cụm chẩn đoán trùng</span><span><i class="match-summary"></i>Cụm tóm tắt trùng</span></div></header>
 <main><div class="toolbar"><label for="query-select">Bệnh nhân query</label><select id="query-select">{options}</select></div>
+<p class="rule-note">Các đoạn tô màu là phần trùng theo quy tắc văn bản; chúng không giải thích vì sao model xếp hạng cao.</p>
 {''.join(panels)}</main>
 <script>
 const querySelect=document.getElementById('query-select');
@@ -149,13 +173,16 @@ querySelect.addEventListener('change',()=>{{
   document.querySelectorAll('.query-panel').forEach(panel=>panel.hidden=panel.id!==querySelect.value);
 }});
 document.querySelectorAll('.choice').forEach(button=>button.addEventListener('click',()=>{{
+  const queryPanel=button.closest('.query-panel');
   const panel=button.closest('.candidate-content');
   panel.querySelectorAll('.choice').forEach(choice=>choice.classList.remove('active'));
   panel.querySelectorAll('.case').forEach(item=>item.hidden=true);
+  queryPanel.querySelectorAll('.query-version').forEach(item=>item.hidden=true);
   button.classList.add('active');
   document.getElementById(button.dataset.target).hidden=false;
+  document.getElementById(button.dataset.queryTarget).hidden=false;
 }}));
-</script></body></html>'''
+</script></body></html>''', dict(highlight_counts)
 
 
 def run(results_root: Path, input_bundle: Path, output: Path) -> None:
@@ -164,7 +191,8 @@ def run(results_root: Path, input_bundle: Path, output: Path) -> None:
     rows, texts, ranking_manifest, input_path, input_manifest = checked_inputs(results_root, input_bundle)
     output.mkdir(parents=True)
     html_path = output / HTML_NAME
-    html_path.write_text(render(rows, texts), encoding="utf-8")
+    page, highlight_counts = render(rows, texts)
+    html_path.write_text(page, encoding="utf-8")
     report_manifest = {
         "schema_version": 1,
         "status": "complete_not_clinically_validated",
@@ -183,6 +211,8 @@ def run(results_root: Path, input_bundle: Path, output: Path) -> None:
         "raw_patient_id_fields_added": False,
         "similarity_scores_displayed": False,
         "selecting_models_displayed": True,
+        "highlight_rules": ["exact_ICD", "shared_diagnosis_phrase", "shared_nonnegated_summary_phrase"],
+        "highlight_counts": highlight_counts,
         "outputs": {HTML_NAME: sha256(html_path)},
     }
     write_json(output / "manifest.json", report_manifest)
@@ -207,6 +237,7 @@ def check_report(output: Path) -> None:
     if (page.count('class="query-panel"') != QUERY_COUNT or
             page.count('<button type="button" class="choice') != QUERY_COUNT * TOP_K or
             page.count('class="case"') != QUERY_COUNT * TOP_K or
+            page.count('class="query-version"') != QUERY_COUNT * TOP_K or
             page.count('class="model-chip"') != expected_model_labels or
             any(label in page for label in ("cosine_similarity", "normalized_cosine", "vote_count", "rank TB"))):
         raise ValueError("Report content check failed")
