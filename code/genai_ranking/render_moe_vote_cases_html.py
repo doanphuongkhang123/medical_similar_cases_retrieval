@@ -16,6 +16,11 @@ from moe_vote_rank import QUERY_COUNT, TOP_K, read_json, read_jsonl, verify
 
 HTML_NAME = "moe_vote_top20.html"
 PSEUDONYM = re.compile(r"P\d{5}\Z")
+MODEL_LABELS = (
+    ("fusion", "Model retrieval"),
+    ("openai", "OpenAI"),
+    ("qwen3", "Qwen3"),
+)
 
 
 def load_content(input_bundle: Path, ranking_manifest: dict, needed_ids: set[str]) -> tuple[dict[str, str], Path, dict]:
@@ -86,16 +91,23 @@ def render(rows: list[dict], texts: dict[str, str]) -> str:
         for item in row["top20"]:
             rank = item["rank"]
             patient_id = item["patient_id"]
+            selected_by = ''.join(
+                f'<span class="model-chip">{label}</span>'
+                for model, label in MODEL_LABELS if model in item["model_scores"]
+            )
             active = ' active' if rank == 1 else ''
             hidden = '' if rank == 1 else ' hidden'
             choices.append(
                 f'<button type="button" class="choice{active}" data-target="case-{query_index}-{rank}">'
-                f'<span class="rank">{rank:02d}</span><strong>{escape(patient_id)}</strong></button>'
+                f'<span class="rank">{rank:02d}</span><span class="choice-main">'
+                f'<strong>{escape(patient_id)}</strong><span class="models">{selected_by}</span>'
+                '</span></button>'
             )
             case_views.append(
                 f'<article class="case" id="case-{query_index}-{rank}"{hidden}>'
                 f'<span class="eyebrow">CANDIDATE #{rank:02d}</span>'
                 f'<h2>{escape(patient_id)}</h2>'
+                f'<div class="selected-by"><span>Được chọn bởi</span><span class="models">{selected_by}</span></div>'
                 f'<pre>{escape(texts[patient_id])}</pre></article>'
             )
         panels.append(
@@ -119,14 +131,16 @@ label{{font-weight:750}}select{{padding:9px 12px;border:1px solid #a7c0af;border
 .eyebrow{{font-size:11px;font-weight:850;letter-spacing:.12em;color:var(--green)}}.query-panel{{display:grid;grid-template-columns:minmax(280px,1fr) minmax(480px,1.6fr);gap:16px}}
 [hidden]{{display:none!important}}.query-content,.candidate-content{{background:white;border:1px solid var(--line);border-radius:14px;box-shadow:0 5px 20px #284e3010}}
 .query-content{{padding:22px;min-width:0}}h2{{font-size:25px;margin:5px 0 16px}}pre{{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;margin:0;padding:16px;background:#f8faf7;border:1px solid #e5eee7;border-radius:10px}}
-.candidate-content{{min-width:0;display:grid;grid-template-columns:205px minmax(0,1fr)}}.candidate-list{{padding:10px;border-right:1px solid var(--line);max-height:75vh;overflow:auto}}
+.candidate-content{{min-width:0;display:grid;grid-template-columns:235px minmax(0,1fr)}}.candidate-list{{padding:10px;border-right:1px solid var(--line);max-height:75vh;overflow:auto}}
 .choice{{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;margin-bottom:5px;text-align:left;border:1px solid transparent;border-radius:9px;background:#f5f8f4;color:var(--ink);cursor:pointer;font:inherit}}
-.choice:hover,.choice.active{{background:#e4f1e7;border-color:#a6cfb2}}.choice .rank{{color:var(--green);font-weight:900;font-variant-numeric:tabular-nums}}.choice strong{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}}
+.choice:hover,.choice.active{{background:#e4f1e7;border-color:#a6cfb2}}.choice .rank{{color:var(--green);font-weight:900;font-variant-numeric:tabular-nums}}.choice-main{{display:grid;gap:5px;min-width:0}}.choice strong{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}}
+.models{{display:flex;gap:4px;flex-wrap:wrap}}.model-chip{{display:inline-block;padding:2px 6px;border-radius:5px;background:#e5efe8;color:#22543b;font-size:10px;font-weight:800;white-space:nowrap}}
+.selected-by{{display:grid;gap:7px;margin:-5px 0 16px;color:var(--muted);font-size:12px;font-weight:750}}.selected-by .model-chip{{font-size:12px;padding:4px 8px}}
 .case-container{{padding:20px;min-width:0;max-height:75vh;overflow:auto}}.case h2{{margin-bottom:15px}}
 @media(max-width:900px){{.query-panel{{grid-template-columns:1fr}}.candidate-content{{grid-template-columns:1fr}}.candidate-list{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;border-right:0;border-bottom:1px solid var(--line);max-height:230px}}.choice{{margin:0}}.case-container{{max-height:none}}}}
 @media(max-width:600px){{main{{padding:14px 10px}}.query-content{{padding:16px}}.candidate-list{{grid-template-columns:repeat(2,minmax(0,1fr))}}}}
 </style></head><body>
-<header><h1>Top 20 bệnh nhân tương tự</h1><p>Chọn query và candidate để xem nội dung bệnh án theo thứ tự xếp hạng.</p></header>
+<header><h1>Top 20 bệnh nhân tương tự</h1><p>Chọn query và candidate để xem nội dung bệnh án cùng các model đã chọn bệnh nhân đó.</p></header>
 <main><div class="toolbar"><label for="query-select">Bệnh nhân query</label><select id="query-select">{options}</select></div>
 {''.join(panels)}</main>
 <script>
@@ -168,6 +182,7 @@ def run(results_root: Path, input_bundle: Path, output: Path) -> None:
         "contains_clinical_text": True,
         "raw_patient_id_fields_added": False,
         "similarity_scores_displayed": False,
+        "selecting_models_displayed": True,
         "outputs": {HTML_NAME: sha256(html_path)},
     }
     write_json(output / "manifest.json", report_manifest)
@@ -181,14 +196,18 @@ def check_report(output: Path) -> None:
             manifest.get("result_count") != QUERY_COUNT * TOP_K or
             manifest.get("contains_clinical_text") is not True or
             manifest.get("similarity_scores_displayed") is not False or
+            manifest.get("selecting_models_displayed") is not True or
             sha256(html_path) != manifest["outputs"][HTML_NAME] or
             sha256(Path(manifest["ranking_manifest"])) != manifest["ranking_manifest_sha256"] or
             sha256(Path(manifest["patient_content_path"])) != manifest["patient_content_sha256"]):
         raise ValueError("Report manifest or source SHA-256 mismatch")
     page = html_path.read_text(encoding="utf-8")
+    rankings = list(read_jsonl(Path(manifest["ranking_manifest"]).parent / "moe_vote_top20.jsonl"))
+    expected_model_labels = sum(len(item["model_scores"]) for row in rankings for item in row["top20"]) * 2
     if (page.count('class="query-panel"') != QUERY_COUNT or
-            page.count('class="choice') != QUERY_COUNT * TOP_K or
+            page.count('<button type="button" class="choice') != QUERY_COUNT * TOP_K or
             page.count('class="case"') != QUERY_COUNT * TOP_K or
+            page.count('class="model-chip"') != expected_model_labels or
             any(label in page for label in ("cosine_similarity", "normalized_cosine", "vote_count", "rank TB"))):
         raise ValueError("Report content check failed")
     print(json.dumps({"status": "pass", "html": str(html_path), "queries": QUERY_COUNT, "cases": QUERY_COUNT * TOP_K}))
