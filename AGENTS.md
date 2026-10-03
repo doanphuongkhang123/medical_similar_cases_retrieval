@@ -107,8 +107,6 @@ Rules:
 - Always dry-run first with `-n` and inspect the itemized changes.
 - Do not use `--delete` unless the user explicitly authorizes deletion and the
   exact remote target has been verified.
-- Do not rsync server datasets, checkpoints, embeddings, logs, or outputs back
-  to the local workspace.
 - If a server-side code change exists, compare it before overwriting. Bring a
   deliberate code hotfix back into local source; do not let two versions drift.
 - Root agent instructions are an exception to targeted pipeline sync. Whenever
@@ -222,3 +220,23 @@ Agent instruction Markdown must match in all three locations:
 After updating it, compare SHA-256 checksums across local, GitHub checkout, and
 server. Do not report the update complete until all reachable copies match. If
 GitHub or SSH is unavailable, state exactly which copy remains unsynchronized.
+
+## 7. Không tự ý tạo file lớn bất hợp lý
+
+- Trước khi xuất dữ liệu, ước lượng số bản ghi và dung lượng từ schema, số lượng
+  dữ liệu và một mẫu đại diện nhỏ. Kiểm tra thiết kế có phù hợp với mục đích sử
+  dụng hay không trước khi ghi toàn bộ file.
+- Không tự ý tạo CSV hoặc artifact khổng lồ do chọn sai đơn vị bản ghi, lặp lại
+  report/text/metadata trên hàng triệu dòng, hoặc xuất chi tiết không cần thiết.
+  Phải sửa thiết kế để tránh lặp dữ liệu; không chỉ nén một đầu ra bất hợp lý.
+- Nếu một đầu ra lớn thực sự cần thiết, báo trước dung lượng ước tính, lý do và
+  phương án gọn hơn, rồi chờ người dùng đồng ý trước khi tạo. Không lấy việc người
+  dùng chưa trả lời làm đồng ý. Đầu ra có dung lượng hợp lý trong phạm vi đã được
+  yêu cầu thì tiếp tục thực hiện, không cần hỏi lại mọi lựa chọn triển khai.
+- Với CSV nối ảnh–bệnh án này, đơn vị đã được chốt là một lần chụp/một dòng
+  `(modality, StudyInstanceUID)`. Lưu các cách nối và ngoại lệ trong dòng tương ứng;
+  không nhân bản report trên từng lát cắt. Chi tiết dùng để tra từng ảnh phải có
+  cách lưu gọn, giữ được liên kết với bảng chính.
+- Sau khi xuất, kiểm tra dung lượng thực tế, số dòng, tính duy nhất của khóa và
+  việc bảo toàn dữ liệu. Nếu dung lượng vượt xa dự tính hoặc bộc lộ lặp dữ liệu
+  bất hợp lý, sửa đầu ra trước khi giao cho người dùng.
