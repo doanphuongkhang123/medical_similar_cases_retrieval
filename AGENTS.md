@@ -240,3 +240,15 @@ GitHub or SSH is unavailable, state exactly which copy remains unsynchronized.
 - Sau khi xuất, kiểm tra dung lượng thực tế, số dòng, tính duy nhất của khóa và
   việc bảo toàn dữ liệu. Nếu dung lượng vượt xa dự tính hoặc bộc lộ lặp dữ liệu
   bất hợp lý, sửa đầu ra trước khi giao cho người dùng.
+
+## 8. Giữ nguyên định dạng Excel, không tự ý làm đẹp
+
+- Khi sửa file Excel, mặc định giữ nguyên định dạng sẵn có của file gốc.
+  Tập trung sửa nội dung, thông tin nối và cấu trúc tab theo yêu cầu.
+- Không tự ý đổi font, cỡ chữ, màu sắc, theme, đường viền hoặc trang trí thêm.
+  Chỉ làm đẹp hay thay đổi phong cách trình bày khi người dùng yêu cầu rõ ràng.
+- Với file Excel mới, dùng định dạng mặc định của Excel nếu người dùng không
+  yêu cầu định dạng riêng.
+- Chỉ điều chỉnh độ rộng cột, chiều cao dòng, xuống dòng, bộ lọc hoặc cố định
+  tiêu đề khi cần để đọc được dữ liệu; không coi đây là lý do để thiết kế lại
+  toàn bộ file.
