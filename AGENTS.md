@@ -252,3 +252,16 @@ GitHub or SSH is unavailable, state exactly which copy remains unsynchronized.
 - Chỉ điều chỉnh độ rộng cột, chiều cao dòng, xuống dòng, bộ lọc hoặc cố định
   tiêu đề khi cần để đọc được dữ liệu; không coi đây là lý do để thiết kế lại
   toàn bộ file.
+
+## 9. Excel Top-K retrieval: đặt report query và candidate cạnh nhau
+
+- Khi tạo hoặc sửa Excel Top-K retrieval, luôn đặt `query_report` và
+  `candidate_report` ở hai cột liền nhau trên cùng một dòng của bảng đối chiếu,
+  để đọc và so sánh trực tiếp từng cặp query–candidate.
+- Không chỉ cung cấp ID hoặc buộc người đọc chuyển tab để xem hai report.
+  Giữ ID, rank và score tương ứng để truy vết, không thay đổi thứ hạng retrieval
+  chỉ để bố trí bảng.
+- Nếu một phía thiếu report hoặc chưa nối được report xác nhận, giữ trạng thái
+  rõ ràng ngay trong bảng đối chiếu; không tự gán report của ca khác.
+- Bố cục này vẫn phải tuân thủ quy tắc dung lượng ở mục 7 và giữ nguyên định
+  dạng Excel ở mục 8.
