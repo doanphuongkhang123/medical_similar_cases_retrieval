@@ -1,8 +1,11 @@
 import { Router } from 'express';
 import { requireAdmin } from '../middleware/auth.js';
-import { assertImageItem, getModalityCandidate, getModalityExport, getModalitySession, listModalityMethods, listModalityQueries, saveModalityReview } from '../data/modalityRetrieval.js';
+import { assertQueryPatient, getPatientRetrievalItem, getPatientRetrievalOptions, listRetrievalPatients, assertImageItem, getModalityCandidate, getModalityExport, getModalitySession, listModalityMethods, listModalityQueries, saveModalityReview } from '../data/modalityRetrieval.js';
 
 const router = Router();
+router.get('/patients', (req, res, next) => { try { res.json(listRetrievalPatients(req.query)); } catch (error) { next(error); } });
+router.get('/patient-options', (req, res, next) => { try { res.json(getPatientRetrievalOptions(req.query.patient)); } catch (error) { next(error); } });
+router.get('/patient-item', (req, res, next) => { try { res.json(getPatientRetrievalItem(req.query.method, req.query.patient, req.query.item)); } catch (error) { next(error); } });
 router.get('/methods', (req, res, next) => { try { res.json(listModalityMethods()); } catch (error) { next(error); } });
 for (const kind of ['series', 'png']) router.get(`/imaging/${kind}`, async (req, res, next) => {
   try {
@@ -19,9 +22,9 @@ for (const kind of ['series', 'png']) router.get(`/imaging/${kind}`, async (req,
   } catch (error) { if (error.name === 'AbortError') error.status = 504; next(error); }
 });
 router.get('/:method/queries', (req, res, next) => { try { res.json(listModalityQueries(req.params.method, req.query)); } catch (error) { next(error); } });
-router.get('/:method/session', (req, res, next) => { try { res.json(getModalitySession(req.params.method, req.query.query)); } catch (error) { next(error); } });
-router.get('/:method/candidate', (req, res, next) => { try { res.json(getModalityCandidate(req.params.method, req.query.query, req.query.candidate)); } catch (error) { next(error); } });
-router.post('/:method/review', (req, res, next) => { try { res.json(saveModalityReview(req.params.method, req.body?.query, req.body?.candidate, { ...req.body, reviewer: req.user.username })); } catch (error) { next(error); } });
+router.get('/:method/session', (req, res, next) => { try { assertQueryPatient(req.params.method, req.query.query, req.query.patient); res.json(getModalitySession(req.params.method, req.query.query)); } catch (error) { next(error); } });
+router.get('/:method/candidate', (req, res, next) => { try { assertQueryPatient(req.params.method, req.query.query, req.query.patient); res.json(getModalityCandidate(req.params.method, req.query.query, req.query.candidate)); } catch (error) { next(error); } });
+router.post('/:method/review', (req, res, next) => { try { assertQueryPatient(req.params.method, req.body?.query, req.body?.patient); res.json(saveModalityReview(req.params.method, req.body?.query, req.body?.candidate, { ...req.body, reviewer: req.user.username })); } catch (error) { next(error); } });
 router.get('/:method/export', requireAdmin, (req, res, next) => {
   try {
     const rows = getModalityExport(req.params.method, req.query.query);

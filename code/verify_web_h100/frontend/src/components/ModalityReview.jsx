@@ -8,7 +8,7 @@ const queryColor = '#EDF6FF', candidateColor = '#FFF8ED';
 const button = { padding: '8px 12px', border: `1px solid ${C.border}`, borderRadius: 7, background: 'white', color: C.ink, cursor: 'pointer' };
 const input = { ...button, width: '100%', boxSizing: 'border-box', minWidth: 0 };
 const muted = { color: C.inkFaint };
-const shortModelNames = { biochemistry: 'Autoencoder', text: 'Qwen', ct: 'CT-CLIP', mri: '3DINO', xray: 'MedSigLIP' };
+const shortModelNames = { biochemistry: 'Autoencoder', text: 'Qwen', ct: 'CT-CLIP', mri: '3DINO', xray: 'MedSigLIP', fusion: 'Attention Pool' };
 async function request(path, signal, options = {}) {
   const response = await apiFetch(`/api/modality/${path}`, { ...options, signal });
   const data = await response.json();
@@ -79,15 +79,15 @@ function Comparison({ session, candidate }) {
         {row('Đơn vị retrieval', items.map(() => session.method.unit))}
         {session.method.id === 'text' && <>
           {row('Số lần nhập viện', items.map(item => item.metadata.visit_count))}
-          {row('Các bệnh án được dùng', items.map(item => item.metadata.visits.join(', ')))}
-          {row('Mô tả bệnh đưa vào model', items.map(item => item.fields.find(([label]) => label === 'Mô tả bệnh đưa vào model')?.[1]))}
+          {row('Các bệnh án được dùng', items.map(item => (item.metadata.visits || []).join(', ')))}
+          {row('Mô tả bệnh', items.map(item => item.fields.find(([label]) => label === 'Mô tả bệnh đưa vào model')?.[1]))}
         </>}
         {session.method.id === 'biochemistry' && <>
           {row('Ngày nhập viện', items.map(item => item.metadata.admission))}
           {row('Ngày ra viện', items.map(item => item.metadata.discharge))}
           {row('Số chỉ số có dữ liệu', items.map(item => item.metadata.observed_tests))}
-          {row('Overlap của cặp', [null, `${candidate.shared_tests} chỉ số chung · phủ ${(candidate.query_coverage * 100).toFixed(1)}% query`])}
-          {session.features.map((feature, index) => <PairRow key={feature.feature_id} id={feature.feature_id} label={<>{feature.name}<div style={{ fontWeight: 400, fontSize: 11, ...muted }}>{feature.unit}{feature.unit_status === 'inferred_unverified' ? ' · đơn vị suy luận chưa xác nhận' : ''}</div></>} values={items.map(item => item.measurements[index] == null ? null : `${item.measurements[index]} ${feature.unit}`)} />)}
+          {candidate.shared_tests != null && row('Overlap của cặp', [null, `${candidate.shared_tests} chỉ số chung · phủ ${(candidate.query_coverage * 100).toFixed(1)}% query`])}
+          {session.features.map((feature, index) => <PairRow key={feature.feature_id} id={feature.feature_id} label={<>{feature.name}<div style={{ fontWeight: 400, fontSize: 11, ...muted }}>{feature.unit}{feature.unit_status === 'inferred_unverified' ? ' · đơn vị suy luận chưa xác nhận' : ''}</div></>} values={items.map(item => item.measurements?.[index] == null ? null : `${item.measurements?.[index]} ${feature.unit}`)} />)}
         </>}
         {isImage && <>
           <PairRow label="Ảnh nguồn của series" values={items.map(item => <SourceImage method={session.method} item={item} />)} />
@@ -98,58 +98,116 @@ function Comparison({ session, candidate }) {
   </section>;
 }
 
+function FusionBranch({ branch, candidateBranch, patientIds, rank }) {
+  const empty = { id: 'Không có dữ liệu', patient_id: '', metadata: {}, fields: [], reports: [], candidate_report_ids: [] };
+  const [ids, setIds] = useState([branch.queries[0]?.id || '', candidateBranch?.queries[0]?.id || '']);
+  const [data, setData] = useState(null), [error, setError] = useState('');
+  useEffect(() => {
+    const controller = new AbortController(); setData(null); setError('');
+    Promise.all(ids.map((id, side) => id ? request(`patient-item?${params({ method: branch.id, patient: patientIds[side], item: id })}`, controller.signal) : Promise.resolve(null)))
+      .then(values => { if (!controller.signal.aborted) setData(values); })
+      .catch(error => { if (!controller.signal.aborted) setError(error.message); });
+    return () => controller.abort();
+  }, [branch.id, ids, patientIds]);
+  if (error) return <p role="alert">{error}</p>;
+  const method = data?.find(Boolean)?.method;
+  return <div>
+    <div style={{ display: 'grid', gridTemplateColumns: '20% 40% 40%', margin: '10px 0' }}><span>Bộ dữ liệu hiển thị</span>
+      {[branch, candidateBranch].map((info, side) => <label key={side} style={{ padding: '0 12px' }}>{side === 0 ? 'Query' : 'Candidate'}<select aria-label={`Fusion ${branch.id} ${side === 0 ? 'query' : 'candidate'}`} style={input} value={ids[side]} disabled={!info?.queries.length} onChange={event => setIds(values => values.map((id, i) => i === side ? event.target.value : id))}>
+        {!info?.queries.length && <option value="">Không có dữ liệu</option>}{info?.queries.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
+      </select></label>)}
+    </div>
+    {method ? <Comparison session={{ method, features: data.find(Boolean).features, query: data[0]?.item || { ...empty, patient_id: patientIds[0] } }} candidate={{ ...(data[1]?.item || { ...empty, patient_id: patientIds[1] }), rank }} /> : <p>Đang tải dữ liệu đối chiếu…</p>}
+  </div>;
+}
+function FusionComparison({ session, candidate }) {
+  const [opened, setOpened] = useState({ text: true });
+  const patientIds = React.useMemo(() => [session.query.patient_id, candidate.patient_id], [session.query.patient_id, candidate.patient_id]);
+  return <section aria-label="So sánh fusion">
+    <div style={{ marginBottom: 10 }}>Query · {patientIds[0]} ↔ Candidate #{candidate.rank} · {patientIds[1]}</div>
+    {session.query.branches.map(branch => {
+      const other = candidate.branches.find(item => item.id === branch.id);
+      return <details key={branch.id} open={Boolean(opened[branch.id])} onToggle={event => { const value = event.currentTarget.open; setOpened(previous => previous[branch.id] === value ? previous : { ...previous, [branch.id]: value }); }} style={{ background: 'white', padding: 12, border: `1px solid ${C.border}`, borderRadius: 8, marginBottom: 10 }}>
+        <summary style={{ cursor: 'pointer' }}>{branch.label} · Query: {branch.queries.length} · Candidate: {other?.queries.length || 0}</summary>
+        {opened[branch.id] && (branch.queries.length || other?.queries.length ? <FusionBranch key={`${patientIds.join(':')}:${branch.id}`} branch={branch} candidateBranch={other} patientIds={patientIds} rank={candidate.rank} /> : <p style={muted}>Hai phía không có dữ liệu trong nhánh này.</p>)}
+      </details>;
+    })}
+  </section>;
+}
+
 export default function ModalityReview({ user, onBackHome }) {
-  const [methods, setMethods] = useState([]);
   const [methodId, setMethodId] = useState('');
   const [search, setSearch] = useState('');
   const [offset, setOffset] = useState(0);
   const [catalogue, setCatalogue] = useState({ queries: [], total: 0 });
+  const [patientId, setPatientId] = useState('');
+  const [options, setOptions] = useState(null);
   const [queryId, setQueryId] = useState('');
   const [session, setSession] = useState(null);
   const [selectedId, setSelectedId] = useState('');
   const [candidate, setCandidate] = useState(null);
   const [score, setScore] = useState('');
+  const [criteria, setCriteria] = useState({});
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [saving, setSaving] = useState(false);
   const activePair = useRef('');
-  activePair.current = JSON.stringify([session?.method.id, session?.query.id, candidate?.id]);
-  useEffect(() => { const controller = new AbortController(); request('methods', controller.signal).then(data => { setMethods(data); setMethodId(data[0]?.id || ''); }).catch(error => { if (!controller.signal.aborted) setError(error.message); }); return () => controller.abort(); }, []);
+  activePair.current = JSON.stringify([patientId, methodId, queryId, selectedId]);
   useEffect(() => {
-    if (!methodId) return;
-    const controller = new AbortController();
-    setCatalogue({ queries: [], total: 0 }); setQueryId(''); setSession(null); setCandidate(null); setError(''); setNotice('');
-    const timer = setTimeout(() => request(`${methodId}/queries?${params({ search, offset, limit: 50 })}`, controller.signal).then(data => { if (!controller.signal.aborted) { setCatalogue(data); setQueryId(data.queries[0]?.id || ''); } }).catch(error => { if (!controller.signal.aborted) setError(error.message); }), 200);
+    const controller = new AbortController(); setError('');
+    const timer = setTimeout(() => request(`patients?${params({ search, offset, limit: 50 })}`, controller.signal).then(data => {
+      if (!controller.signal.aborted) { setCatalogue(data); setPatientId(previous => previous || data.queries[0]?.id || ''); }
+    }).catch(error => { if (!controller.signal.aborted) setError(error.message); }), 200);
     return () => { clearTimeout(timer); controller.abort(); };
-  }, [methodId, search, offset]);
+  }, [search, offset]);
   useEffect(() => {
-    if (!queryId) return;
-    const controller = new AbortController(); setSession(null); setCandidate(null); setError(''); setNotice('');
-    request(`${methodId}/session?${params({ query: queryId })}`, controller.signal).then(data => { if (!controller.signal.aborted) { setSession(data); setSelectedId(data.candidates[0]?.id || ''); } }).catch(error => { if (!controller.signal.aborted) setError(error.message); });
+    setOptions(null); setQueryId(''); setSession(null); setCandidate(null); setNotice(''); setError('');
+    if (!patientId) return;
+    const controller = new AbortController();
+    request(`patient-options?${params({ patient: patientId })}`, controller.signal).then(data => {
+      if (!controller.signal.aborted) { setOptions(data); setMethodId(previous => data.methods.some(method => method.id === previous && method.available) ? previous : data.methods.find(method => method.id === 'fusion' && method.available)?.id || data.methods.find(method => method.available)?.id || ''); }
+    }).catch(error => { if (!controller.signal.aborted) setError(error.message); });
     return () => controller.abort();
-  }, [methodId, queryId]);
+  }, [patientId]);
+  useEffect(() => {
+    setSession(null); setCandidate(null); setNotice('');
+    const selected = options?.methods.find(method => method.id === methodId && method.available);
+    setQueryId(selected?.queries[0]?.id || '');
+  }, [options, methodId]);
+  useEffect(() => {
+    setSession(null); setCandidate(null); setError(''); setNotice('');
+    if (!queryId || options?.patient_id !== patientId || !options.methods.find(method => method.id === methodId)?.queries.some(item => item.id === queryId)) return;
+    const controller = new AbortController();
+    request(`${methodId}/session?${params({ query: queryId, patient: patientId })}`, controller.signal).then(data => { if (!controller.signal.aborted) { setSession(data); setSelectedId(data.candidates[0]?.id || ''); } }).catch(error => { if (!controller.signal.aborted) setError(error.message); });
+    return () => controller.abort();
+  }, [methodId, queryId, patientId, options]);
   useEffect(() => {
     if (!session || !selectedId) return;
     const controller = new AbortController(); setCandidate(null); setError(''); setNotice('');
-    request(`${session.method.id}/candidate?${params({ query: session.query.id, candidate: selectedId })}`, controller.signal).then(data => { if (!controller.signal.aborted) { setCandidate(data); setScore(data.verification?.similarity || ''); setNote(data.verification?.note || ''); } }).catch(error => { if (!controller.signal.aborted) setError(error.message); });
+    request(`${session.method.id}/candidate?${params({ query: session.query.id, candidate: selectedId, patient: session.query.patient_id })}`, controller.signal).then(data => { if (!controller.signal.aborted) { setCandidate({ ...data, loadedFor: JSON.stringify([session.method.id, session.query.id]) }); setScore((session.method.id === 'fusion' ? data.verification?.overall_similarity : data.verification?.similarity) || ''); setCriteria(data.verification?.criteria_scores || {}); setNote(data.verification?.note || ''); } }).catch(error => { if (!controller.signal.aborted) setError(error.message); });
     return () => controller.abort();
   }, [session, selectedId]);
+  const methods = options?.patient_id === patientId ? options.methods : [];
   const selectedMethod = methods.find(method => method.id === methodId);
+  const isFusion = methodId === 'fusion';
+  // Never render or save an old pair while the user changes patient, method or subquery.
+  const currentSession = session?.query.patient_id === patientId && session.method.id === methodId && session.query.id === queryId ? session : null;
+  const currentCandidate = currentSession && candidate?.id === selectedId && candidate.loadedFor === JSON.stringify([methodId, queryId]) ? candidate : null;
   async function save() {
+    if (!currentCandidate) return;
     const pair = activePair.current;
     setSaving(true); setError(''); setNotice('');
     try {
-      const review = await request(`${methodId}/review`, undefined, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ query: session.query.id, candidate: candidate.id, similarity: Number(score), note }) });
+      const review = await request(`${methodId}/review`, undefined, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ patient: patientId, query: currentSession.query.id, candidate: currentCandidate.id,
+        ...(isFusion ? { criteria_scores: Object.fromEntries(currentSession.review_criteria.map(([key]) => [key, Number(criteria[key])])), overall_similarity: Number(score) } : { similarity: Number(score) }), note }) });
       if (pair !== activePair.current) return;
-      setCandidate(value => ({ ...value, verification: review }));
-      // Keep the selected pair's form after saving; navigation may have changed it.
-      setNotice('Đã lưu đánh giá theo modality.');
+      setCandidate(value => ({ ...value, verification: review })); setNotice('Đã lưu đánh giá.');
     } catch (error) { if (pair === activePair.current) setError(error.message); } finally { setSaving(false); }
   }
   async function download(format) {
     try {
-      const response = await apiFetch(`/api/modality/${methodId}/export?${params({ query: session.query.id, format })}`);
+      const response = await apiFetch(`/api/modality/${methodId}/export?${params({ query: currentSession.query.id, format })}`);
       if (!response.ok) throw new Error('Không xuất được kết quả.');
       const url = URL.createObjectURL(await response.blob()); const anchor = document.createElement('a');
       anchor.href = url; anchor.download = `retrieval-${methodId}.${format}`; anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -158,44 +216,55 @@ export default function ModalityReview({ user, onBackHome }) {
   return <main style={{ minHeight: '100vh', background: C.bg, color: C.ink, fontFamily: 'Inter, sans-serif', padding: 20 }}>
     <style>{FONTS}</style>
     <button onClick={onBackHome} style={button}><Home size={14} /> Trang chính</button>
-    <h1 style={{ fontSize: 23 }}>Retrieval theo từng modality</h1>
+    <h1 style={{ fontSize: 23 }}>Retrieval theo query</h1>
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 14, marginBottom: 15 }}>
-      <label>Nhánh retrieval<select aria-label="Nhánh retrieval" style={input} value={methodId} onChange={event => { setMethodId(event.target.value); setSearch(''); setOffset(0); }}>{methods.map(method => <option key={method.id} value={method.id}>{method.label}</option>)}</select></label>
-      <label><Search size={13} /> Tìm query<input aria-label="Tìm query theo modality" style={input} placeholder="Mã bệnh nhân, bệnh án, UID hoặc mô tả series" value={search} onChange={event => { setSearch(event.target.value); setOffset(0); }} /></label>
-      <label>Query<select aria-label="Query theo modality" style={input} value={queryId} onChange={event => setQueryId(event.target.value)}>{catalogue.queries.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
+      <label><Search size={13} /> Tìm bệnh nhân query<input aria-label="Tìm bệnh nhân query" style={input} placeholder="Mã bệnh nhân hoặc mã hồ sơ" value={search} onChange={event => { setSearch(event.target.value); setOffset(0); }} /></label>
+      <label>1. Chọn query<select aria-label="Bệnh nhân query" style={input} value={patientId} onChange={event => setPatientId(event.target.value)}>
+        {patientId && !catalogue.queries.some(item => item.id === patientId) && <option value={patientId}>Bệnh nhân {patientId} · đang chọn</option>}
+        {catalogue.queries.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
+      </select></label>
     </div>
-    {selectedMethod && <div style={{ background: 'white', padding: 12, border: `1px solid ${C.border}`, borderRadius: 7, marginBottom: 15, lineHeight: 1.6 }}>
-      <strong>{shortModelNames[selectedMethod.id] || selectedMethod.label}</strong> · Đơn vị: {selectedMethod.unit} · {selectedMethod.queries.toLocaleString('vi-VN')} query có kết quả
-    </div>}
     <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 15, fontSize: 12 }}>
-      <span>{catalogue.total.toLocaleString('vi-VN')} query khớp · Trang {Math.floor(offset / 50) + 1}</span>
+      <span>{catalogue.total.toLocaleString('vi-VN')} bệnh nhân khớp · Trang {Math.floor(offset / 50) + 1}</span>
       <button style={button} disabled={!offset} onClick={() => setOffset(value => value - 50)}>Trang query trước</button>
       <button style={button} disabled={offset + 50 >= catalogue.total} onClick={() => setOffset(value => value + 50)}>Trang query sau</button>
     </div>
+    {patientId && <h2 style={{ fontSize: 16 }}>2. Chọn retrieval cho bệnh nhân {patientId}</h2>}
+    <div role="group" aria-label="Lựa chọn retrieval" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(175px,1fr))', gap: 10, marginBottom: 15 }}>
+      {methods.map(method => <button key={method.id} data-retrieval-method={method.id} disabled={!method.available} aria-pressed={methodId === method.id && method.available} onClick={() => setMethodId(method.id)} style={{ ...button, textAlign: 'left', background: methodId === method.id && method.available ? '#DDF3EF' : 'white', opacity: method.available ? 1 : .65, cursor: method.available ? 'pointer' : 'default' }}>
+        <strong>{method.label}</strong><div style={{ fontSize: 12, marginTop: 5 }}>{method.available ? `${method.queries.length} lựa chọn query` : 'Không khả dụng'}</div>
+        {!method.available && <div style={{ fontSize: 11, marginTop: 4 }}>{method.reason}</div>}
+      </button>)}
+    </div>
+    {selectedMethod?.available && <div style={{ background: 'white', padding: 12, border: `1px solid ${C.border}`, borderRadius: 7, marginBottom: 15 }}>
+      <strong>{shortModelNames[selectedMethod.id] || selectedMethod.label}</strong> · Đơn vị: {selectedMethod.unit}
+      <label style={{ display: 'block', marginTop: 10 }}>Query dùng cho {selectedMethod.label}<select aria-label="Dữ liệu query" style={input} value={queryId} onChange={event => setQueryId(event.target.value)}>{selectedMethod.queries.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
+    </div>}
     {error && <div role="alert" style={{ color: C.red, marginBottom: 15 }}>{error}</div>}
-    {!methods.length && !error && <p>Đang tải các nhánh retrieval…</p>}
-    {methods.length > 0 && !catalogue.total && !error && <p>Chưa có query khớp tìm kiếm hoặc đang tải danh mục.</p>}
-    {session && <div style={{ display: 'flex', gap: 15, alignItems: 'start', flexWrap: 'wrap' }}>
+    {patientId && !options && !error && <p>Đang kiểm tra dữ liệu của query…</p>}
+    {options && !methods.some(method => method.available) && <p>Query này chưa có lựa chọn retrieval khả dụng.</p>}
+    {currentSession && <div style={{ display: 'flex', gap: 15, alignItems: 'start', flexWrap: 'wrap' }}>
       <aside aria-label="Top-20 theo modality" style={{ flex: '1 1 240px', maxWidth: 300, background: 'white', border: `1px solid ${C.border}`, borderRadius: 8, padding: 10 }}>
-        <strong>Top-{session.candidates.length} · {session.method.metric === 'cosine_distance' ? 'Distance' : 'Cosine'}</strong>
-        {session.candidates.map(item => <button key={item.id} onClick={() => setSelectedId(item.id)} aria-pressed={item.id === selectedId} style={{ ...button, display: 'block', width: '100%', marginTop: 7, textAlign: 'left', background: item.id === selectedId ? '#DDF3EF' : 'white', overflowWrap: 'anywhere' }}>
+        <strong>Top-{currentSession.candidates.length} · {currentSession.method.metric === 'cosine_distance' ? 'Distance' : 'Cosine'}</strong>
+        {currentSession.candidates.map(item => <button key={item.id} onClick={() => setSelectedId(item.id)} aria-pressed={item.id === selectedId} style={{ ...button, display: 'block', width: '100%', marginTop: 7, textAlign: 'left', background: item.id === selectedId ? '#DDF3EF' : 'white', overflowWrap: 'anywhere' }}>
           <strong>#{item.rank} · {item.score.toFixed(6)}</strong><div style={{ fontSize: 11 }}>{item.label}</div>
           {item.shared_tests != null && <div style={{ fontSize: 10 }}>{item.shared_tests} xét nghiệm chung · phủ {(item.query_coverage * 100).toFixed(1)}%</div>}
         </button>)}
       </aside>
       <div style={{ flex: '4 1 600px', minWidth: 0 }}>
-        {candidate ? <>
-          <div style={{ marginBottom: 10, fontSize: 12 }}>Candidate #{candidate.rank} · Score nguồn: <strong>{candidate.source_score}</strong></div>
-          <Comparison session={session} candidate={candidate} />
+        {currentCandidate ? <>
+          <div style={{ marginBottom: 10, fontSize: 12 }}>Candidate #{currentCandidate.rank} · Score nguồn: <strong>{currentCandidate.source_score}</strong></div>
+          {isFusion ? <FusionComparison key={`${queryId}:${selectedId}`} session={currentSession} candidate={currentCandidate} /> : <Comparison session={currentSession} candidate={currentCandidate} />}
           <section aria-label="Đánh giá theo modality" style={{ marginTop: 15, padding: 15, background: 'white', border: `1px solid ${C.border}`, borderRadius: 8 }}>
-            <strong>Đánh giá mức phù hợp theo {session.method.label.toLocaleLowerCase('vi')}</strong>
+            <strong>Đánh giá mức phù hợp theo {currentSession.method.label.toLocaleLowerCase('vi')}</strong>
+            {isFusion && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))', gap: 10, marginTop: 10 }}>{currentSession.review_criteria.map(([key, label]) => <label key={key}>{label}<select aria-label={`Điểm fusion ${label}`} value={criteria[key] || ''} onChange={event => setCriteria(value => ({ ...value, [key]: event.target.value }))} style={input}><option value="">Chọn 1–5</option>{[1,2,3,4,5].map(value => <option key={value} value={value}>{value}</option>)}</select></label>)}</div>}
             <div style={{ display: 'flex', gap: 12, marginTop: 10, flexWrap: 'wrap' }}>
-              <label>Điểm<select aria-label="Điểm phù hợp theo modality" value={score} onChange={event => setScore(event.target.value)} style={button}><option value="">Chọn 1–5</option>{[1,2,3,4,5].map(value => <option key={value} value={value}>{value}</option>)}</select></label>
+              <label>{isFusion ? 'Điểm chung' : 'Điểm'}<select aria-label="Điểm phù hợp theo modality" value={score} onChange={event => setScore(event.target.value)} style={button}><option value="">Chọn 1–5</option>{[1,2,3,4,5].map(value => <option key={value} value={value}>{value}</option>)}</select></label>
               <input aria-label="Ghi chú theo modality" value={note} maxLength={5000} onChange={event => setNote(event.target.value)} placeholder="Ghi chú" style={{ ...input, flex: '1 1 240px' }} />
-              <button style={button} disabled={!score || saving} onClick={save}>{saving ? 'Đang lưu…' : 'Lưu đánh giá modality'}</button>
+              <button style={button} disabled={!score || saving || (isFusion && currentSession.review_criteria.some(([key]) => !criteria[key]))} onClick={save}>{saving ? 'Đang lưu…' : 'Lưu đánh giá'}</button>
             </div>
-            <div style={{ fontSize: 11, marginTop: 8, ...muted }}>1 = ít phù hợp, 5 = rất phù hợp. Đánh giá lưu riêng theo phiên bản nguồn, nhánh và cặp query–candidate; mỗi lần chấm lại giữ lịch sử.</div>
-            {candidate.verification && <div style={{ fontSize: 11, marginTop: 8 }}>Lần lưu gần nhất: {candidate.verification.reviewer} · {new Date(candidate.verification.at).toLocaleString('vi-VN')}</div>}
+            <div style={{ fontSize: 11, marginTop: 8, ...muted }}>1 = ít phù hợp, 5 = rất phù hợp.</div>
+            {currentCandidate.verification && <div style={{ fontSize: 11, marginTop: 8 }}>Lần lưu gần nhất: {currentCandidate.verification.reviewer} · {new Date(currentCandidate.verification.at).toLocaleString('vi-VN')}</div>}
             {notice && <div role="status" style={{ color: C.teal, marginTop: 8 }}>{notice}</div>}
             {user.role === 'admin' && <div style={{ display: 'flex', gap: 8, marginTop: 10 }}><button style={button} onClick={() => download('csv')}>Xuất CSV query này</button><button style={button} onClick={() => download('json')}>Xuất JSON query này</button></div>}
           </section>

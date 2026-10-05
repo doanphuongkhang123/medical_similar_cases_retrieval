@@ -102,7 +102,7 @@ Do not commit runtime data, public login credentials, logs or manifests.
 
 ## Retrieval by modality
 
-The separate `Retrieval theo từng modality` utility reads an immutable compact
+The `Retrieval theo query` utility reads an immutable compact
 bundle with five methods: neural biochemistry39 (fixed seed 20261004), patient
 text Qwen3-Embedding-0.6B, CT-CLIP, 3DINO MRI and MedSigLIP X-ray. It preserves
 patient/visit/source-embedding retrieval units and every original image/lab
@@ -150,3 +150,44 @@ other modalities/model versions. Admins can export reviews for a query as
 CSV/JSON. This is a review interface; original scores are not clinical relevance
 probabilities, lab full-visit medians are retrospective, and 12 lab unit labels
 remain `inferred_unverified`.
+
+
+## Query-first retrieval and fusion
+
+Select the original patient ID first, then choose biochemistry, text, CT, MRI,
+X-ray or fusion. The paginated catalogue is the union of exact patient IDs across
+methods (3,099 in the current bundle). Method changes keep that patient selected;
+searching or paging the catalogue also keeps the current selection. A method with
+no eligible source unit stays visible, disabled and labelled `Không khả dụng`,
+with a reason distinguishing absent branch data from insufficient lab results.
+For multiple admissions or source image embeddings, choose the specific source
+unit; there is no new pooling or reranking. API requests with a patient context
+reject a query that belongs to a different patient.
+
+Fusion reads the entire existing `TOPK_FILE`, rather than the old utility's ten
+selected patients. It uses the existing Attention Pool patient-fusion rankings
+(3,095 queries, 61,900 pairs). This run used the original multimodal encoders; it
+is not a freshly trained fusion of the newer five modality models. Its expected
+SHA-256 is pinned in `backend/src/data/fusionRetrieval.js`; an intentional source
+change must supply `FUSION_TOPK_SHA256` and be verified before deployment.
+Fusion retains source decimal scores and exact ranks. Patient IDs must join the
+text identity catalogue exactly; unmapped IDs, nonfinite scores, duplicate
+candidates or malformed ranks fail loudly. No new data export is required.
+
+Fusion pair comparison can expand each modality and choose which admission or
+image source unit to display independently on either side. These are available
+review records, not a claim that the shown Qwen text or the newer image embeddings
+were the original fusion encoder inputs. Missing records stay visibly absent.
+Source images load only when their section is opened. Query/candidate fields
+remain aligned in shared table rows.
+
+Fusion ratings use the existing nine criteria plus overall score and the original
+`reviews` namespace/key `query_patient_id:candidate_patient_id`. Existing ratings
+and legacy status are preserved; a single-modality rating cannot overwrite them.
+The other five methods keep their original SHA-keyed `modality_reviews` records.
+The original verification utility remains available unchanged.
+
+Run `backend/verification/queryFirstAudit.mjs` on Vaipe with `MODALITY_ROOT`,
+`TOPK_FILE`, `AUDIT_HOST` and an isolated `DATA_DIR`. It audits all patient IDs,
+availability, subquery ownership and every fusion Top-20, and prints a small
+aggregate report with source hashes. Keep that report on the server, not in Git.

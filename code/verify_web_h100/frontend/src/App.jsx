@@ -107,8 +107,8 @@ function UtilityHome({ user, onLogout, onOpenVerification, onOpenLlmVerification
       <div style={utilityGridStyle}>
         <button type="button" onClick={onOpenModalities} style={primaryUtilityCardStyle}>
           <span style={primaryUtilityIconStyle}><Search size={25} /></span>
-          <strong style={{ display: "block", marginTop: 22, color: C.ink, fontSize: 20 }}>Retrieval theo từng modality</strong>
-          <span style={{ display: "block", marginTop: 8, color: C.inkMuted, fontSize: 13, lineHeight: 1.55 }}>Top-20 riêng cho sinh hoá, mô tả bệnh Qwen và ảnh CT, MRI, X-quang; đối chiếu và đánh giá từng nhánh.</span>
+          <strong style={{ display: "block", marginTop: 22, color: C.ink, fontSize: 20 }}>Retrieval theo query</strong>
+          <span style={{ display: "block", marginTop: 8, color: C.inkMuted, fontSize: 13, lineHeight: 1.55 }}>Chọn một query, rồi retrieval theo sinh hoá, mô tả bệnh, CT, MRI, X-quang hoặc fusion.</span>
           <span style={openUtilityStyle}>Mở retrieval <ChevronRight size={16} /></span>
         </button>
         <button type="button" onClick={onOpenPatients} style={primaryUtilityCardStyle}>
