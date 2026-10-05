@@ -11,12 +11,15 @@ services:
       RETRIEVAL_CONFIG: /app/retrieval/backend/src/data/retrieval.json
       TOPK_FILE: /app/retrieval/top20_related_patients.csv
       LLM_RETRIEVAL_ROOT: /app/llm_retrieval
+      MODALITY_ROOT: /app/modalities
+      DICOM_WORKER_URL: http://imaging:4002
     volumes:
       - ${WEB_DATA_ROOT:?Set WEB_DATA_ROOT}/runtime:/app/runtime
       - ${WEB_DATA_ROOT}/raw:/app/raw:ro
       - ${WEB_DATA_ROOT}/structured_v2:/app/structured:ro
       - ${WEB_DATA_ROOT}/retrieval:/app/retrieval:ro
       - ${WEB_DATA_ROOT}/llm_retrieval:/app/llm_retrieval:ro
+      - ${WEB_DATA_ROOT}/modalities:/app/modalities:ro
     restart: unless-stopped
     healthcheck:
       test: [CMD, node, -e, "fetch('http://localhost:4000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
@@ -34,4 +37,17 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    restart: unless-stopped
+  imaging:
+    runtime: runc
+    build: ./imaging_worker
+    environment:
+      CUDA_VISIBLE_DEVICES: ""
+      MODALITY_ROOT: /app/modalities
+      DICOM_ROOT: /app/dicom
+    volumes:
+      - ${WEB_DATA_ROOT}/modalities:/app/modalities:ro
+      - ${DICOM_DATA_ROOT:-/data/khangdp/scr/raw}:/app/dicom:ro
+    cpus: 2
+    mem_limit: 2g
     restart: unless-stopped

@@ -99,3 +99,54 @@ protected endpoints, all selected query/candidate IDs, EHR and lab counts,
 NPY header/size alignment, and decoded slices through the public URL. Unit
 tests alone do not prove the clinical dataset or public deployment works.
 Do not commit runtime data, public login credentials, logs or manifests.
+
+## Retrieval by modality
+
+The separate `Retrieval theo từng modality` utility reads an immutable compact
+bundle with five methods: neural biochemistry39 (fixed seed 20261004), patient
+text Qwen3-Embedding-0.6B, CT-CLIP, 3DINO MRI and MedSigLIP X-ray. It preserves
+patient/visit/source-embedding retrieval units and every original image/lab
+rank and decimal score. Text Top20 uses the existing instructed query and
+uninstructed document embeddings and the same float32 exact-cosine contract
+as the Qwen demo, without running an encoder or calling an external API.
+
+Prepare on Vaipe with GPUs hidden and BLAS threads limited to two:
+
+```
+python scripts/build_modality_bundle.py --data-root /mnt/disk4/similar_cases_retrieval/data --output NEW_SERVER_OUTPUT
+```
+
+The stage verifies raw workbook/source fingerprints, estimates size before
+export, enforces a 64 MiB budget, reads every output back and validates ranks,
+scores, overlap, missingness, IDs and same-patient exclusion. Reports are stored
+once in dictionaries; Top20 uses integer references rather than repeated text.
+The bundle contains its own normalized values/reports/identities and provenance,
+and is a cross-modal review artifact, so its server source output lives under
+`data/modality_review_web/`, not the EHR-derived-data root. Copy the verified
+bundle to H100 `WEB_DATA_ROOT/modalities/` and mount it read-only. Never add it
+to Git. Searchable/paginated query catalogues expose all eligible original
+queries. A report is displayed only for that embedding's confirmed selectors;
+uncertain reports are labelled and never arbitrarily assigned.
+
+A CPU-only `imaging` service reads frames directly from the existing canonical
+DICOM ZIPs in `DICOM_DATA_ROOT` (default `/data/khangdp/scr/raw`). It exposes no
+host port; authenticated backend routes proxy requests. ZIP members are read
+without extraction, matched by exact PatientID/StudyUID/SeriesUID, sorted by
+position/instance and deduplicated by SOP/frame. Header catalogues have a bounded
+32-entry cache and two concurrent decoding slots. Source archives stay read-only;
+no second copy or whole-cohort converted NPY dataset is created. The grayscale
+source-series viewer is not the encoder's resampled/cropped input tensor.
+Frame rendering includes CT rescale, MONOCHROME1 inversion, window/level and
+preview/native dimensions. Missing archives/identity matches or unsupported
+frames produce a visible error without changing the ranking or substituting
+another series. Tests run via `python -m unittest test_server` in this service.
+Frame selection uses the [pydicom pixel-array API](https://pydicom.github.io/pydicom/stable/reference/generated/pydicom.pixels.pixel_array.html)
+with a file-like source and frame index, plus pinned decompression plugins.
+
+Each modality review stores one 1–5 rating and note in the `modality_reviews`
+SQLite namespace with history. Its key includes the bundle method SHA-256,
+method, query and candidate IDs, keeping it separate from fusion reviews and
+other modalities/model versions. Admins can export reviews for a query as
+CSV/JSON. This is a review interface; original scores are not clinical relevance
+probabilities, lab full-visit medians are retrospective, and 12 lab unit labels
+remain `inferred_unverified`.

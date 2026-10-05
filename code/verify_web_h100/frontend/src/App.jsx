@@ -13,6 +13,7 @@ import {
 import { C, FONTS } from "./theme.js";
 import { StatusBadge, tdStyle, thStyle } from "./components/ui.jsx";
 import ScanViewport from "./components/ScanViewport.jsx";
+import ModalityReview from "./components/ModalityReview.jsx";
 
 const tabs = [
   ["ehr", "EHR", FileText], ["labs", "Lab result", FlaskConical],
@@ -63,6 +64,7 @@ export default function App() {
     return <VerifyApp user={user} onLogout={signOut} onBackHome={() => setActiveTool(null)} />;
   }
   if (activeTool === "patient-browser") return <PatientBrowser onBackHome={() => setActiveTool(null)} />;
+  if (activeTool === "modality-review") return <ModalityReview user={user} onBackHome={() => setActiveTool(null)} />;
   if (activeTool === "llm-retrieval-verification") {
     return <LlmRetrievalApp user={user} onLogout={signOut} onBackHome={() => setActiveTool(null)} />;
   }
@@ -73,13 +75,14 @@ export default function App() {
       onOpenVerification={() => setActiveTool("patient-verification")}
       onOpenLlmVerification={() => setActiveTool("llm-retrieval-verification")}
       onOpenPatients={() => setActiveTool("patient-browser")}
+      onOpenModalities={() => setActiveTool("modality-review")}
       onManageAccounts={() => setShowAccounts(true)}
     />
     {showAccounts && <AccountManager onClose={() => setShowAccounts(false)} />}
   </>;
 }
 
-function UtilityHome({ user, onLogout, onOpenVerification, onOpenLlmVerification, onOpenPatients, onManageAccounts }) {
+function UtilityHome({ user, onLogout, onOpenVerification, onOpenLlmVerification, onOpenPatients, onOpenModalities, onManageAccounts }) {
   const futureUtilities = [
     ["Báo cáo và thống kê", "Theo dõi tiến độ, phân bố điểm và tổng hợp kết quả đánh giá."],
   ];
@@ -102,6 +105,12 @@ function UtilityHome({ user, onLogout, onOpenVerification, onOpenLlmVerification
         <p style={{ margin: 0, color: C.inkMuted, lineHeight: 1.6, fontSize: 14 }}>Mỗi tiện ích hoạt động độc lập. Bạn có thể quay lại trang này bất cứ lúc nào mà không cần đăng nhập lại.</p>
       </div>
       <div style={utilityGridStyle}>
+        <button type="button" onClick={onOpenModalities} style={primaryUtilityCardStyle}>
+          <span style={primaryUtilityIconStyle}><Search size={25} /></span>
+          <strong style={{ display: "block", marginTop: 22, color: C.ink, fontSize: 20 }}>Retrieval theo từng modality</strong>
+          <span style={{ display: "block", marginTop: 8, color: C.inkMuted, fontSize: 13, lineHeight: 1.55 }}>Top-20 riêng cho sinh hoá, mô tả bệnh Qwen và ảnh CT, MRI, X-quang; đối chiếu và đánh giá từng nhánh.</span>
+          <span style={openUtilityStyle}>Mở retrieval <ChevronRight size={16} /></span>
+        </button>
         <button type="button" onClick={onOpenPatients} style={primaryUtilityCardStyle}>
           <span style={primaryUtilityIconStyle}><FileText size={25} /></span>
           <strong style={{ display: "block", marginTop: 22, color: C.ink, fontSize: 20 }}>Tra cứu hồ sơ bệnh nhân</strong>
