@@ -8,6 +8,7 @@ const queryColor = '#EDF6FF', candidateColor = '#FFF8ED';
 const button = { padding: '8px 12px', border: `1px solid ${C.border}`, borderRadius: 7, background: 'white', color: C.ink, cursor: 'pointer' };
 const input = { ...button, width: '100%', boxSizing: 'border-box', minWidth: 0 };
 const muted = { color: C.inkFaint };
+const shortModelNames = { biochemistry: 'Autoencoder', text: 'Qwen', ct: 'CT-CLIP', mri: '3DINO', xray: 'MedSigLIP' };
 async function request(path, signal, options = {}) {
   const response = await apiFetch(`/api/modality/${path}`, { ...options, signal });
   const data = await response.json();
@@ -159,12 +160,12 @@ export default function ModalityReview({ user, onBackHome }) {
     <button onClick={onBackHome} style={button}><Home size={14} /> Trang chính</button>
     <h1 style={{ fontSize: 23 }}>Retrieval theo từng modality</h1>
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 14, marginBottom: 15 }}>
-      <label>Nhánh retrieval<select aria-label="Nhánh retrieval" style={input} value={methodId} onChange={event => { setMethodId(event.target.value); setSearch(''); setOffset(0); }}>{methods.map(method => <option key={method.id} value={method.id}>{method.label} · {method.model}</option>)}</select></label>
+      <label>Nhánh retrieval<select aria-label="Nhánh retrieval" style={input} value={methodId} onChange={event => { setMethodId(event.target.value); setSearch(''); setOffset(0); }}>{methods.map(method => <option key={method.id} value={method.id}>{method.label}</option>)}</select></label>
       <label><Search size={13} /> Tìm query<input aria-label="Tìm query theo modality" style={input} placeholder="Mã bệnh nhân, bệnh án, UID hoặc mô tả series" value={search} onChange={event => { setSearch(event.target.value); setOffset(0); }} /></label>
       <label>Query<select aria-label="Query theo modality" style={input} value={queryId} onChange={event => setQueryId(event.target.value)}>{catalogue.queries.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
     </div>
     {selectedMethod && <div style={{ background: 'white', padding: 12, border: `1px solid ${C.border}`, borderRadius: 7, marginBottom: 15, lineHeight: 1.6 }}>
-      <strong>{selectedMethod.model}</strong> · Đơn vị: {selectedMethod.unit} · {selectedMethod.queries.toLocaleString('vi-VN')} query có kết quả
+      <strong>{shortModelNames[selectedMethod.id] || selectedMethod.label}</strong> · Đơn vị: {selectedMethod.unit} · {selectedMethod.queries.toLocaleString('vi-VN')} query có kết quả
       <div style={{ fontSize: 12 }}>{selectedMethod.description}</div>
       <div style={{ fontSize: 12, ...muted }}>{selectedMethod.metric === 'cosine_distance' ? 'Cosine distance: thấp hơn là gần hơn.' : 'Cosine similarity: cao hơn là gần hơn.'} Kết quả theo từng nhánh; chưa phải xác nhận tương đồng lâm sàng.</div>
     </div>}
