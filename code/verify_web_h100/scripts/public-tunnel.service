@@ -1,0 +1,14 @@
+[Unit]
+Description=SCR patient review public HTTPS tunnel
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /data/khangdp/scr/verify_web/code/scripts/public_tunnel.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=append:/data/khangdp/scr/verify_web/logs/public-tunnel.log
+StandardError=append:/data/khangdp/scr/verify_web/logs/public-tunnel.log
+
+[Install]
+WantedBy=default.target

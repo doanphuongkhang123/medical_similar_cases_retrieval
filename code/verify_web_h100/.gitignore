@@ -1,0 +1,10 @@
+.env
+backend/data/
+node_modules/
+dist/
+*.sqlite3*
+*.log
+*.pid
+!backend/src/data/
+backend/src/data/*
+!backend/src/data/*.js
