@@ -12,6 +12,12 @@ with a source label when they differ from the existing review packet. Age is
 derived from admission year and birth year and labelled accordingly; gender
 codes remain source codes rather than receiving an unverified interpretation.
 
+The comparison view uses shared rows for EHR fields and lab names, so long
+text and missing data cannot shift the two sides out of alignment. Each side
+retains its own admission and lab date selection. Diagnosis, medication and
+procedure entries are grouped by their displayed name, preserving every
+occurrence and its source details; grouping does not match event dates.
+
 Images stay outside SQL and Docker images. A request reads one NPY slice,
 applies window/level and returns a grayscale PNG. The user can choose quick
 preview or native resolution, pan, zoom, and select a slice. This is a 2D

@@ -351,12 +351,9 @@ function VerifyApp({ user, onLogout, onBackHome }) {
       {similarityFilterActive && <SimilarityFocus tab={tab} evidence={candidate?.similarity_evidence} />}
       {similarityFilterActive && candidate
         ? <AlignedComparison tab={tab} evidence={candidate.similarity_evidence} queryId={session.query.id} candidateId={candidate.patient.id} />
-        : <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 1, flex: 1, overflow: "hidden", background: C.border }}>
-          <PatientPanel title="Bệnh nhân query" patient={session.query} tab={tab} evidence={candidate?.similarity_evidence} similarOnly={similarityFilterActive} side="query" />
-          {candidate
-            ? <PatientPanel title={`Bệnh nhân tương tự #${candidate.rank} · ${(candidate.similarity_score * 100).toFixed(2)}%`} patient={candidate.patient} tab={tab} evidence={candidate.similarity_evidence} similarOnly={similarityFilterActive} side="candidate" />
-            : <Centered>Đang tải hồ sơ tương tự…</Centered>}
-        </div>}
+        : candidate
+          ? <FullComparison key={`${session.query.id}-${candidate.patient.id}`} query={session.query} candidate={candidate} tab={tab} />
+          : <Centered>Đang tải hồ sơ tương tự…</Centered>}
       <section aria-label="Phiếu chấm mức độ tương tự" style={reviewPanelStyle}>
         <div style={{ marginBottom: 12 }}>
           <strong style={{ fontSize: 14 }}>Đánh giá theo tiêu chí</strong>
@@ -803,6 +800,93 @@ function AlignedComparison({ tab, evidence, queryId, candidateId }) {
 
 function formatLabResults(results) {
   return (results || []).map((result) => <div key={`${result.date}-${result.value}`} style={{ color: result.flagged ? C.red : C.ink }}><span style={{ color: C.inkFaint }}>{result.date}: </span>{result.value} {result.unit}</div>);
+}
+
+// Pair by field/name, never by the position of independently rendered cards.
+// Keep every occurrence on its own side; an absent value stays visibly absent.
+function comparisonGroups(left, right, keyOf, labelOf = keyOf) {
+  const groups = new Map();
+  [left, right].forEach((items, side) => (items || []).forEach((item) => {
+    const key = normalizeText(keyOf(item));
+    if (!groups.has(key)) groups.set(key, { key, label: labelOf(item) || "Không rõ tên", values: [[], []] });
+    groups.get(key).values[side].push(item);
+  }));
+  return [...groups.values()];
+}
+
+function ComparisonRow({ label, children, rowKey }) {
+  return <tr data-comparison-row={rowKey} style={{ borderTop: `1px solid ${C.border}`, verticalAlign: "top" }}>
+    <th scope="row" style={{ ...tdStyle, textAlign: "left", fontWeight: 700, background: "white" }}>{label}</th>
+    {children.map((content, side) => <td key={side} data-comparison-side={side === 0 ? "query" : "candidate"} style={{ ...tdStyle, ...(side === 0 ? alignedQueryCellStyle : alignedCandidateCellStyle), whiteSpace: "pre-wrap", overflowWrap: "anywhere", lineHeight: 1.6 }}>{content}</td>)}
+  </tr>;
+}
+
+function FullComparison({ query, candidate, tab }) {
+  const patients = [query, candidate.patient];
+  const [recordIds, setRecordIds] = useState(() => patients.map(patient => patient.records[0]?.id || ""));
+  const records = patients.map((patient, side) => patient.records.find(record => record.id === recordIds[side]) || patient.records[0]);
+  const evidence = candidate.similarity_evidence;
+  const terms = [...(evidence?.ehr_phrases || []), ...(evidence?.ehr_keywords || [])];
+  const missing = <span style={{ color: C.inkFaint }}>Không có dữ liệu</span>;
+  const row = (label, values, key = label) => <ComparisonRow key={key} label={label} rowKey={key}>{values}</ComparisonRow>;
+  const age = (patient, record) => {
+    const value = record?.demographics?.age_at_visit ?? patient.age;
+    return value == null ? missing : `${value} tuổi${record?.demographics?.birth_year ? ` (theo năm sinh ${record.demographics.birth_year})` : ""}`;
+  };
+  return <section aria-label="Đối chiếu thông tin theo từng trường" style={alignedSectionStyle}>
+    <table style={{ ...alignedTableStyle, tableLayout: "fixed" }}>
+      <colgroup><col style={{ width: "20%" }} /><col style={{ width: "40%" }} /><col style={{ width: "40%" }} /></colgroup>
+      <thead><tr><th style={thStyle}>Trường thông tin</th><th style={{ ...thStyle, ...alignedQueryHeaderStyle }}>Bệnh nhân query · {query.id}</th><th style={{ ...thStyle, ...alignedCandidateHeaderStyle }}>Bệnh nhân tương tự #{candidate.rank} · {candidate.patient.id} · {(candidate.similarity_score * 100).toFixed(2)}%</th></tr></thead>
+      <tbody>
+        {row("Bệnh án", patients.map((patient, side) => <select aria-label={`Bệnh án ${side === 0 ? "query" : "candidate"}`} value={records[side]?.id || ""} onChange={event => setRecordIds(ids => ids.map((id, index) => index === side ? event.target.value : id))} style={selectStyle}>{patient.records.map(record => <option key={record.id} value={record.id}>{record.label} · {record.date}</option>)}</select>))}
+        {row("Tuổi", patients.map((patient, side) => age(patient, records[side])))}
+        {row("Giới tính", patients.map((patient, side) => records[side]?.demographics?.gender_code ? `Mã ${records[side].demographics.gender_code}` : patient.gender || missing))}
+      </tbody>
+      {tab === "ehr" && <tbody>
+        {comparisonGroups(records[0]?.ehr?.details, records[1]?.ehr?.details, item => item[0]).map(group => row(group.label, group.values.map(items => items.length ? items.map(([title, value], index) => <div key={index} style={{ marginBottom: index + 1 < items.length ? 12 : 0 }}><HighlightedText value={value} terms={terms} /></div>) : missing), `ehr-${group.key}`))}
+        {!records.some(record => record?.ehr?.details?.length) && row("EHR", [missing, missing])}
+      </tbody>}
+      {tab === "labs" && <ComparisonLabs key={recordIds.join(":")} records={records} sharedLabs={evidence?.shared_labs || []} />}
+      {["diagnoses", "medicines", "procedures"].includes(tab) && <ComparisonClinical key={`${recordIds.join(":")}-${tab}`} records={records} tab={tab} />}
+      {["XQ", "CT", "MRI"].includes(tab) && <tbody>{row(tab, patients.map((patient, side) => <Imaging key={`${records[side]?.id}-${tab}`} modality={tab} patient={patient} studies={records[side]?.studies?.[tab] || []} shared={evidence?.shared_modalities?.includes(tab)} />))}</tbody>}
+    </table>
+  </section>;
+}
+
+function ComparisonLabs({ records, sharedLabs }) {
+  const labs = records.map(record => record?.labs || []);
+  const dates = labs.map(items => [...new Set(items.map(lab => lab.date || "Không rõ ngày"))].sort((a, b) => b.localeCompare(a)));
+  const [selectedDates, setSelectedDates] = useState(() => dates.map(items => items[0] || ""));
+  const shared = new Set(sharedLabs.map(normalizeText));
+  const visible = labs.map((items, side) => items.filter(lab => (lab.date || "Không rõ ngày") === selectedDates[side]));
+  const groups = comparisonGroups(visible[0], visible[1], lab => lab.name);
+  return <tbody>
+    <ComparisonRow label="Ngày trả kết quả" rowKey="lab-dates">{dates.map((items, side) => items.length ? <select aria-label={`Ngày trả kết quả ${side === 0 ? "query" : "candidate"}`} style={selectStyle} value={selectedDates[side]} onChange={event => setSelectedDates(values => values.map((value, index) => index === side ? event.target.value : value))}>{items.map(date => <option key={date} value={date}>{date}</option>)}</select> : "Không có dữ liệu")}</ComparisonRow>
+    {groups.map(group => <ComparisonRow key={group.key} label={<>{group.label}{shared.has(group.key) && <span style={{ ...evidenceChipStyle, marginLeft: 5 }}>Chung</span>}</>} rowKey={`lab-${group.key}`}>
+      {group.values.map(items => items.length ? items.map((lab, index) => <div key={index} style={{ marginBottom: 12 }}>
+        <strong style={{ color: lab.flagged ? C.red : C.ink }}>{lab.value} {lab.unit}</strong>
+        <div>Tham chiếu: {lab.range || "—"}</div><div>Mẫu: {lab.sample || "—"}</div><div>Khoa xét nghiệm: {lab.department || "—"}</div>
+        <details><summary>Chi tiết</summary>{Object.entries(lab.source_fields || {}).map(([key, value]) => <div key={key}>{key}: {typeof value === "object" ? JSON.stringify(value) : String(value)}</div>)}</details>
+      </div>) : <span style={{ color: C.inkFaint }}>Không có dữ liệu trong ngày đã chọn</span>)}
+    </ComparisonRow>)}
+    {!groups.length && <ComparisonRow label="Xét nghiệm" rowKey="labs-empty">{["Không có dữ liệu", "Không có dữ liệu"]}</ComparisonRow>}
+  </tbody>;
+}
+
+function ComparisonClinical({ records, tab }) {
+  const [page, setPage] = useState(0);
+  const kinds = records.map(record => tab === "medicines" && record?.source_medicines ? "source_medicines" : tab);
+  const items = records.map((record, side) => record?.[kinds[side]] || []);
+  const nameOf = item => tab === "diagnoses" ? `${item.diagnosis_code || ""} · ${item.diagnosis_text || ""}` : tab === "medicines" ? item.TenDuoc || item.drug_name || "" : item.procedure_name || "";
+  const groups = comparisonGroups(items[0], items[1], nameOf);
+  const pages = Math.max(1, Math.ceil(groups.length / 50));
+  return <tbody>
+    <tr><td colSpan={3} style={tdStyle}>Đối chiếu theo tên; mỗi bên giữ thời điểm và chi tiết riêng. {groups.length} nhóm · Trang {page + 1}/{pages} <button disabled={!page} onClick={() => setPage(value => value - 1)}>Trước</button> <button disabled={page + 1 >= pages} onClick={() => setPage(value => value + 1)}>Tiếp</button></td></tr>
+    {groups.slice(page * 50, (page + 1) * 50).map(group => <ComparisonRow key={group.key} label={group.label} rowKey={`${tab}-${group.key}`}>
+      {group.values.map((rows, side) => !records[side]?.structured_available ? "Thông tin này chưa được đồng bộ" : rows.length ? <ClinicalTable key={`${group.key}-${kinds[side]}`} kind={kinds[side]} rows={rows} /> : <span style={{ color: C.inkFaint }}>Không có dữ liệu</span>)}
+    </ComparisonRow>)}
+    {!groups.length && <ComparisonRow label="Bản ghi" rowKey="clinical-empty">{records.map(record => record?.structured_available ? "Không có bản ghi trong bệnh án gốc" : "Thông tin này chưa được đồng bộ")}</ComparisonRow>}
+  </tbody>;
 }
 
 function PatientPanel({ title, patient, tab, evidence, similarOnly, side }) {
