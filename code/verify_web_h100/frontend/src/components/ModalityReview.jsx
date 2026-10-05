@@ -166,8 +166,6 @@ export default function ModalityReview({ user, onBackHome }) {
     </div>
     {selectedMethod && <div style={{ background: 'white', padding: 12, border: `1px solid ${C.border}`, borderRadius: 7, marginBottom: 15, lineHeight: 1.6 }}>
       <strong>{shortModelNames[selectedMethod.id] || selectedMethod.label}</strong> · Đơn vị: {selectedMethod.unit} · {selectedMethod.queries.toLocaleString('vi-VN')} query có kết quả
-      <div style={{ fontSize: 12 }}>{selectedMethod.description}</div>
-      <div style={{ fontSize: 12, ...muted }}>{selectedMethod.metric === 'cosine_distance' ? 'Cosine distance: thấp hơn là gần hơn.' : 'Cosine similarity: cao hơn là gần hơn.'} Kết quả theo từng nhánh; chưa phải xác nhận tương đồng lâm sàng.</div>
     </div>}
     <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 15, fontSize: 12 }}>
       <span>{catalogue.total.toLocaleString('vi-VN')} query khớp · Trang {Math.floor(offset / 50) + 1}</span>
