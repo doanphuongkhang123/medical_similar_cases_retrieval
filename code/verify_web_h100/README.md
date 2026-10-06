@@ -102,6 +102,12 @@ Do not commit runtime data, public login credentials, logs or manifests.
 
 ## Retrieval by modality
 
+Temporarily hidden from the UI at the user's request.
+`SHOW_MODALITY_RETRIEVAL = false` in `frontend/src/App.jsx` hides the entry card
+and gates its client view. Restore this flag to re-enable it. Source bundles,
+backend endpoints and reviews are retained. The original `Xác minh bệnh nhân`
+utility continues to show our model's existing fusion results.
+
 The `Retrieval theo query` utility reads an immutable compact
 bundle with five methods: neural biochemistry39 (fixed seed 20261004), patient
 text Qwen3-Embedding-0.6B, CT-CLIP, 3DINO MRI and MedSigLIP X-ray. It preserves

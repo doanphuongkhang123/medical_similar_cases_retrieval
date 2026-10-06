@@ -15,6 +15,9 @@ import { StatusBadge, tdStyle, thStyle } from "./components/ui.jsx";
 import ScanViewport from "./components/ScanViewport.jsx";
 import ModalityReview from "./components/ModalityReview.jsx";
 
+// Temporarily hide the modality utility; retain its code and source data for re-enabling.
+const SHOW_MODALITY_RETRIEVAL = false;
+
 const tabs = [
   ["ehr", "EHR", FileText], ["labs", "Lab result", FlaskConical],
   ["diagnoses", "Chẩn đoán", FileText], ["medicines", "Thuốc", FileText],
@@ -64,7 +67,7 @@ export default function App() {
     return <VerifyApp user={user} onLogout={signOut} onBackHome={() => setActiveTool(null)} />;
   }
   if (activeTool === "patient-browser") return <PatientBrowser onBackHome={() => setActiveTool(null)} />;
-  if (activeTool === "modality-review") return <ModalityReview user={user} onBackHome={() => setActiveTool(null)} />;
+  if (SHOW_MODALITY_RETRIEVAL && activeTool === "modality-review") return <ModalityReview user={user} onBackHome={() => setActiveTool(null)} />;
   if (activeTool === "llm-retrieval-verification") {
     return <LlmRetrievalApp user={user} onLogout={signOut} onBackHome={() => setActiveTool(null)} />;
   }
@@ -75,7 +78,7 @@ export default function App() {
       onOpenVerification={() => setActiveTool("patient-verification")}
       onOpenLlmVerification={() => setActiveTool("llm-retrieval-verification")}
       onOpenPatients={() => setActiveTool("patient-browser")}
-      onOpenModalities={() => setActiveTool("modality-review")}
+      onOpenModalities={SHOW_MODALITY_RETRIEVAL ? () => setActiveTool("modality-review") : undefined}
       onManageAccounts={() => setShowAccounts(true)}
     />
     {showAccounts && <AccountManager onClose={() => setShowAccounts(false)} />}
@@ -105,12 +108,12 @@ function UtilityHome({ user, onLogout, onOpenVerification, onOpenLlmVerification
         <p style={{ margin: 0, color: C.inkMuted, lineHeight: 1.6, fontSize: 14 }}>Mỗi tiện ích hoạt động độc lập. Bạn có thể quay lại trang này bất cứ lúc nào mà không cần đăng nhập lại.</p>
       </div>
       <div style={utilityGridStyle}>
-        <button type="button" onClick={onOpenModalities} style={primaryUtilityCardStyle}>
+        {onOpenModalities && <button type="button" onClick={onOpenModalities} style={primaryUtilityCardStyle}>
           <span style={primaryUtilityIconStyle}><Search size={25} /></span>
           <strong style={{ display: "block", marginTop: 22, color: C.ink, fontSize: 20 }}>Retrieval theo query</strong>
           <span style={{ display: "block", marginTop: 8, color: C.inkMuted, fontSize: 13, lineHeight: 1.55 }}>Chọn một query, rồi retrieval theo sinh hoá, mô tả bệnh, CT, MRI, X-quang hoặc fusion.</span>
           <span style={openUtilityStyle}>Mở retrieval <ChevronRight size={16} /></span>
-        </button>
+        </button>}
         <button type="button" onClick={onOpenPatients} style={primaryUtilityCardStyle}>
           <span style={primaryUtilityIconStyle}><FileText size={25} /></span>
           <strong style={{ display: "block", marginTop: 22, color: C.ink, fontSize: 20 }}>Tra cứu hồ sơ bệnh nhân</strong>
