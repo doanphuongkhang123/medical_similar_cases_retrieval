@@ -4,20 +4,52 @@ This file is mandatory project context. Every agent must read it before
 inspecting data, editing code, running tests, launching jobs, syncing files, or
 publishing changes.
 
-## 1. Two-machine setup
+## 1. Local workstation, primary H100 server, and legacy Vaipe server
 
-This project has two distinct environments. Do not treat them as interchangeable.
+These environments have distinct roles. Do not treat their paths, code, or
+artifacts as interchangeable.
+
+### Default server policy — effective 2026-10-08
+
+- H100 (`brev-h100`) is the primary server for running code, tests, data
+  processing, model downloads, training, inference, and deployment.
+- Use the old Vaipe server (`vaipe_aiotlab`) only when the user explicitly
+  requests it. In particular, retrieve code from Vaipe only when the user
+  clearly says to take that code from the old server.
+- Do not automatically connect to Vaipe, retrieve/sync its code or data, or
+  fall back to it when an H100 path, dependency, dataset, or connection is
+  unavailable. Report the missing requirement on H100 instead.
+- This policy takes precedence over legacy Vaipe-only commands and paths in
+  pipeline READMEs, handoffs, and status/support documents. Those references
+  describe earlier runs; they do not authorize using Vaipe for new work.
+- This policy does not assert that all Vaipe pipelines or datasets have been
+  migrated to H100. Verify the required H100 paths and runtime before use.
 
 ### Local workstation — code editing only
 
 - Workspace: `/Users/k/Documents/work/SimilarCasesRetrieval`
 - Purpose: inspect and edit source code, review diffs, prepare scripts, and
   create local-only supporting material.
-- The real EHR data and the lab GPUs are not local.
+- The real clinical datasets and server GPUs are not local.
 - Do not claim that a pipeline was tested on real data or that embeddings were
   generated based on a local or synthetic run.
 
-### Shared lab server — tests, data processing, and compute
+### Primary H100 server — tests, data processing, and compute
+
+- SSH alias: `brev-h100`.
+- Verified identity on 2026-10-08: hostname `brev-jkkk35yxw`, user `nvidia`.
+- Project root: `/data/khangdp/scr/`.
+- Verified web code mapping:
+  local `code/verify_web_h100/` → `/data/khangdp/scr/verify_web/code/`.
+- Web runtime/data root: `/data/khangdp/scr/verify_web/`.
+- Raw imaging root: `/data/khangdp/scr/raw/`.
+- Canonical project agent instructions: `/data/khangdp/scr/AGENTS.md`.
+- Other pipeline code, EHR raw input, data, experiment, and Python/environment
+  paths must be verified on H100 before execution. Do not translate
+  `/mnt/disk4/...` paths mechanically or use another pipeline's derived data
+  as a replacement raw source.
+
+### Legacy Vaipe server — explicit user request only
 
 - SSH alias: `vaipe_aiotlab`
 - Code root: `/mnt/disk4/similar_cases_retrieval/code`
@@ -31,10 +63,14 @@ This project has two distinct environments. Do not treat them as interchangeable
 - `/mnt/disk4/similar_cases_retrieval/data/ehr/ehr_preprocessed/` contains
   downstream derived artifacts. Do not silently use those artifacts as the
   source of a new pipeline that is required to start from raw data.
-- The server contains the real datasets and shared NVIDIA GPUs.
+- These paths document the legacy server and do not imply that corresponding
+  files already exist on H100.
+
+### Data and execution rules on the selected server
+
 - Run unit/integration tests, schema audits, preprocessing, model downloads,
-  training, and inference on this server unless the user explicitly says
-  otherwise.
+  training, and inference on H100 by default. Use Vaipe only when explicitly
+  requested by the user.
 - For every new data pipeline, record the raw input path and SHA-256 in its
   manifest. Intermediate normalized tables must live inside that pipeline's
   own data folder so lineage does not depend on another pipeline's outputs.
@@ -45,15 +81,22 @@ This project has two distinct environments. Do not treat them as interchangeable
   text-embedding, and cross-modal retrieval artifacts remain in their
   modality-specific roots.
 
-Before server work, verify identity and paths:
+Before H100 server work, verify identity and the project root, then verify the
+specific code/data paths required by the task:
+
+```bash
+ssh -o BatchMode=yes brev-h100 \
+  'hostname; whoami; test -d /data/khangdp/scr'
+```
+
+If SSH fails, stop and report that server execution did not happen. A local
+synthetic test or automatic fallback to Vaipe is not a substitute. When the
+user explicitly requests Vaipe work, verify its identity and paths with:
 
 ```bash
 ssh -o BatchMode=yes vaipe_aiotlab \
   'hostname; whoami; test -d /mnt/disk4/similar_cases_retrieval/code; test -d /mnt/disk4/similar_cases_retrieval/data'
 ```
-
-If SSH fails, stop and report that server execution did not happen. A local
-synthetic test is not a substitute.
 
 ## 2. Required workflow
 
@@ -63,9 +106,10 @@ Follow this order for every code task:
    pipeline README/handoff.
 2. Edit code in the local workspace. Local is the source of truth for code.
 3. Review the exact local diff and preserve unrelated user changes.
-4. Dry-run a targeted rsync to the matching server path.
+4. Verify the matching H100 path and dry-run a targeted rsync to it. A Vaipe
+   target requires an explicit user request.
 5. Perform the real rsync without `--delete`.
-6. Run tests and data/compute work through `ssh vaipe_aiotlab`.
+6. Run tests and data/compute work through `ssh brev-h100` by default.
 7. Verify output counts, schemas, finite values, IDs, manifests, and artifact
    paths on the server.
 8. Only then report the task as tested or complete, explicitly naming the host
@@ -81,23 +125,23 @@ the resulting server artifacts were checked.
 The server code directory may not be a Git worktree. Synchronize code from
 local to server with `rsync`; do not assume `git pull` exists on the server.
 
-Example for one pipeline:
+Example for the verified H100 web-code mapping:
 
 ```bash
-LOCAL=/Users/k/Documents/work/SimilarCasesRetrieval/code/ehr/context_clues/
-REMOTE=/mnt/disk4/similar_cases_retrieval/code/code/ehr/context_clues/
+LOCAL=/Users/k/Documents/work/SimilarCasesRetrieval/code/verify_web_h100/
+REMOTE=/data/khangdp/scr/verify_web/code/
 
 rsync -avhn --itemize-changes \
   --exclude '__pycache__/' \
   --exclude '.pytest_cache/' \
   --exclude '.DS_Store' \
-  "$LOCAL" "vaipe_aiotlab:$REMOTE"
+  "$LOCAL" "brev-h100:$REMOTE"
 
 rsync -avh --itemize-changes \
   --exclude '__pycache__/' \
   --exclude '.pytest_cache/' \
   --exclude '.DS_Store' \
-  "$LOCAL" "vaipe_aiotlab:$REMOTE"
+  "$LOCAL" "brev-h100:$REMOTE"
 ```
 
 Rules:
@@ -109,17 +153,21 @@ Rules:
   exact remote target has been verified.
 - If a server-side code change exists, compare it before overwriting. Bring a
   deliberate code hotfix back into local source; do not let two versions drift.
+  Access to legacy Vaipe code still requires the user's explicit request.
 - Root agent instructions are an exception to targeted pipeline sync. Whenever
   `AGENTS.md` changes, sync it explicitly to:
-  `/mnt/disk4/similar_cases_retrieval/code/AGENTS.md`.
+  `brev-h100:/data/khangdp/scr/AGENTS.md`.
+- Update `/mnt/disk4/similar_cases_retrieval/code/AGENTS.md` on Vaipe only when
+  the user explicitly requests legacy-server synchronization. Its historical
+  copy is not part of the default three-copy requirement below.
 
 ## 4. Shared-GPU policy
 
-The GPUs belong to a shared lab server. Before any command that can allocate
+Treat server GPUs as shared resources. Before any command that can allocate
 CUDA memory, inspect utilization and running processes:
 
 ```bash
-ssh vaipe_aiotlab \
+ssh brev-h100 \
   'nvidia-smi --query-gpu=index,name,memory.total,memory.free,utilization.gpu \
    --format=csv,noheader; \
    nvidia-smi --query-compute-apps=pid,process_name,used_memory --format=csv,noheader'
@@ -140,7 +188,9 @@ ssh vaipe_aiotlab \
   wait-and-run job only when the user explicitly requests one.
 - CPU-only preprocessing and network-only model downloads must explicitly hide
   GPUs with `CUDA_VISIBLE_DEVICES=""` when practical.
-- Put Hugging Face/model caches on `/mnt/disk4`, not a full system disk.
+- Put Hugging Face/model caches in a verified data/cache directory under
+  `/data/khangdp/scr/` on H100, not a full system disk. For explicitly requested
+  Vaipe work, use `/mnt/disk4`.
 
 When the user explicitly requests a server-side wait-and-run script, it must:
 
@@ -204,9 +254,9 @@ git diff --cached
 - Stage explicit paths; never use a broad add when unrelated files are dirty.
 - Confirm every staged file belongs to the main runnable pipeline or is an
   agent instruction.
-- Commit and push only after relevant tests have passed on
-  `vaipe_aiotlab` (an instruction-only Markdown change needs content/sync
-  verification rather than GPU tests).
+- Commit and push only after relevant tests have passed on the selected server
+  (H100 by default; Vaipe only when explicitly requested). An instruction-only
+  Markdown change needs content/sync verification rather than GPU tests.
 - Do not rewrite history or force-push unless the user explicitly requests it.
 
 ## 6. Three-copy requirement for agent instructions
@@ -215,11 +265,13 @@ Agent instruction Markdown must match in all three locations:
 
 1. Local workspace: `/Users/k/Documents/work/SimilarCasesRetrieval/AGENTS.md`
 2. GitHub: tracked on the active project branch
-3. Lab server: `/mnt/disk4/similar_cases_retrieval/code/AGENTS.md`
+3. Primary H100 server: `brev-h100:/data/khangdp/scr/AGENTS.md`
 
 After updating it, compare SHA-256 checksums across local, GitHub checkout, and
 server. Do not report the update complete until all reachable copies match. If
 GitHub or SSH is unavailable, state exactly which copy remains unsynchronized.
+Do not connect to Vaipe just to update or checksum its legacy copy; that requires
+an explicit user request.
 
 ## 7. Không tự ý tạo file lớn bất hợp lý
 
